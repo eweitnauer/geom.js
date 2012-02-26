@@ -9,6 +9,12 @@ Point = function(x, y) {
   this.y = y || 0;
 }
 
+/// Sets x and y to passed values and returns this.
+Point.prototype.set = function(x, y) {
+  this.x = x; this.y = y;
+  return this;
+}
+
 /// Return distance to other point.
 Point.prototype.dist = function(other) {
   var dx = this.x-other.x, dy = this.y-other.y;
