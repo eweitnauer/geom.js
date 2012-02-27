@@ -9,6 +9,18 @@ Point = function(x, y) {
   this.y = y || 0;
 }
 
+/// Returns a new point which is this rotated about (0, 0) by angle.
+Point.prototype.rotate = function(angle) {
+  return new Point(this.x*Math.cos(angle) - this.y*Math.sin(angle),
+                   this.y*Math.cos(angle) + this.x*Math.sin(angle));
+}
+
+/// Rotates this about (0, 0) by angle and returns this.
+Point.prototype.Rotate = function(angle) {
+  return this.set(this.x*Math.cos(angle) - this.y*Math.sin(angle),
+                  this.y*Math.cos(angle) + this.x*Math.sin(angle));
+}
+
 /// Sets x and y to passed values and returns this.
 Point.prototype.set = function(x, y) {
   this.x = x; this.y = y;
