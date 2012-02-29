@@ -9,52 +9,175 @@ assert.fequal = function(a, b, msg) {
   assert.ok(a > b-1e-6);
 }
 
-exports['basics'] = function(test) {
+exports['Point'] = function(test) {
+  var a = new Point();
+  var b = new Point(1,2);
+  var c = new Point(b);
+  
+  test.equal(a.x, 0);
+  test.equal(a.y, 0);
+  
+  test.equal(b.x, 1);
+  test.equal(b.y, 2);
+  
+  test.deepEqual(c, b);
+  test.notEqual(c, b);
+  
+  test.done();  
+}
+
+exports['equals'] = function(test) {
   var a = new Point(-1,-2);
-  var a_orig = a.copy();
+  
+  test.ok(a.equals(new Point(-1,-2), 0));
+  test.ok(a.equals(new Point(-1.5,-2), 0.5));
+  test.ok(!a.equals(new Point(-1.5,-2), 0.4999));
+  
+  test.done();
+}
+
+exports['normalize, Normalize'] = function(test) {
+  var a = new Point(-1,-2);
+
+  // normalize
+  var l = 1/Math.sqrt(5.);
+  test.fequal(a.normalize().x, -1 * l);
+  test.fequal(a.normalize().y, -2 * l);
+  test.deepEqual(a, new Point(-1,-2));
+  
+  // Normalize
+  a.Normalize();
+  test.fequal(a.x, -1 * l);
+  test.fequal(a.y, -2 * l);
+
+  test.done();
+}
+
+exports['scale, Scale'] = function(test) {
+  var a = new Point(-1,-2);
+
+  // scale
+  test.equal(a.scale(2).x, -2);
+  test.equal(a.scale(2).y, -4);
+  test.deepEqual(a, new Point(-1,-2));
+
+  // Scale
+  a.Scale(2);
+  test.equal(a.x, -2);
+  test.equal(a.y, -4);
+
+  test.done();
+}
+
+exports['add, Add'] = function(test) {
+  var a = new Point(-1,-2);
   var b = new Point(2,3);
 
-  test.equal(a.x, -1);
-  test.equal(a.y, -2);
-  test.equal(a_orig.x, -1);
-  test.equal(a_orig.y, -2);
+  test.equal(a.add(b).x, 1);
+  test.equal(a.add(b).y, 1);
+ 
+  var a2 = a.Add(b);
+  test.equal(a2, a);
+  test.equal(a.x, 1);
+  test.equal(a.y, 1);
   
+  test.done();
+}
+
+exports['sub, Sub'] = function(test) {
+  var a = new Point(-1,-2);
+  var b = new Point(2,3);
+
+  test.equal(a.sub(b).x, -3);
+  test.equal(a.sub(b).y, -5);
+
+  var a2 = a.Sub(b);
+  test.equal(a2, a);
+  test.equal(a.x, -3);
+  test.equal(a.y, -5);
+  
+  test.done();
+}
+
+exports['mul'] = function(test) {
+  var a = new Point(-1,-2);
+  var b = new Point(2,3);
+
   // scalar product
   test.equal(a.mul(b), -8);
   test.equal(b.mul(a), -8);
+  test.deepEqual(a, new Point(-1,-2));
+
+  test.done();
+}
+
+exports['cross'] = function(test) {
+  var a = new Point(-1,-2);
+  var b = new Point(2,3);
+
+  // cross product
+  test.equal(a.cross(b), 1);
+  test.equal(b.cross(a), -1);
+  test.deepEqual(a, new Point(-1,-2));
+
+  test.done();
+}
+
+exports['dist, dist2'] = function(test) {
+  var a = new Point(-1,-2);
+  var b = new Point(2,3);
   
-  // length and length2
-  test.fequal(a.length(), Math.sqrt(5.));
-  test.equal(a.length2(), 5.);
-  
-  // dist and dist2
   test.equal(a.dist(a), 0);
   test.fequal(a.dist(b), Math.sqrt(34.));
   test.fequal(b.dist(a), Math.sqrt(34.));
   test.fequal(a.dist2(b), 34.);
   test.fequal(b.dist2(a), 34.);
-  
-  // cross
-  test.equal(a.cross(b), 1);
-  test.equal(b.cross(a), -1);
-  
-  // Normalize
-  var l = 1/Math.sqrt(5.);
-  a.Normalize();
-  test.fequal(a.x, -1 * l);
-  test.fequal(a.y, -2 * l);
-  test.fequal(a_orig.normalize().x, a.x);
-  test.fequal(a_orig.normalize().y, a.y);
-  a = a_orig.copy();
-  test.deepEqual(new Point(0,0), (new Point(0,0)).normalize());
 
-  // operators
-  test.equal(a.add(b).x, 1);
-  test.equal(a.add(b).y, 1);
-  test.equal(a.sub(b).x, -3);
-  test.equal(a.sub(b).y, -5);
-  test.equal(a.scale(2).x, -2);
-  test.equal(a.scale(2).y, -4);
+  test.done();
+}
+
+exports['len, len2'] = function(test) {
+  var a = new Point(-1,-2);
+
+  test.fequal(a.len(), Math.sqrt(5.));
+  test.equal(a.len2(), 5.);
+  test.done();
+}
+
+exports['Set'] = function(test) {
+  var a = new Point(-1,2);
+  var b = new Point(2,3);
+  
+  a.Set(b);
+  test.notEqual(a, b);
+  test.deepEqual(a, b);
+
+  test.done();
+}
+
+exports['copy'] = function(test) {
+  var a = new Point(-1,2);
+  var b = a.copy();
+  
+  test.notEqual(a, b);
+  test.deepEqual(a, b);
+
+  test.done();
+}
+
+exports['rotate, Rotate'] = function(test) {
+  var a = new Point(0,1);
+  var b = a.rotate(0.5*Math.PI);
+  
+  test.equal(a.x, 0);
+  test.equal(a.y, 1);
+  test.fequal(b.x, -1);
+  test.fequal(b.y, 0);
+  
+  a.Rotate(-0.5*Math.PI);
+  test.fequal(a.x, 1);
+  test.fequal(a.y, 0);  
+
   test.done();
 }
 
