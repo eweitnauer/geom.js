@@ -3,10 +3,12 @@
 /// The point class represents a point or vector in R^2. The interpretations as
 /// vector or point are used interchangingly below. 
 
-/// Construct point with coordinates x, y. Default is 0, 0.
-Point = function(x, y) {
-  this.x = x || 0;
-  this.y = y || 0;
+/// Constructor. Either pass a point instance or x, y coordinates. If nothing is
+/// passed, the point is initialized with 0, 0.
+Point = function(p_or_x, y) {
+  if (arguments.length==0) { this.x = 0; this.y = 0 }
+  else if (arguments.length==1) { this.x = p_or_x.x; this.y = p_or_x.y }
+  else { this.x = p_or_x; this.y = y }
 }
 
 /// Returns a new point which is this rotated about (0, 0) by angle.
@@ -17,13 +19,22 @@ Point.prototype.rotate = function(angle) {
 
 /// Rotates this about (0, 0) by angle and returns this.
 Point.prototype.Rotate = function(angle) {
-  return this.set(this.x*Math.cos(angle) - this.y*Math.sin(angle),
+  return this.Set(this.x*Math.cos(angle) - this.y*Math.sin(angle),
                   this.y*Math.cos(angle) + this.x*Math.sin(angle));
 }
 
-/// Sets x and y to passed values and returns this.
-Point.prototype.set = function(x, y) {
-  this.x = x; this.y = y;
+/// There are two ways to call the function:
+/// 1) Set(q)   ... set coordinates to coordinates of Point q
+/// 2) Set(x,y) ... set coordinates to x, y
+/// Returns this.
+Point.prototype.Set = function(other_or_x, y) {
+  if (arguments.length == 1) {
+    this.x = other_or_x.x;
+    this.y = other_or_x.y;
+  } else {
+    this.x = other_or_x;
+    this.y = y;
+  }
   return this;
 }
 
@@ -40,12 +51,12 @@ Point.prototype.dist2 = function(other) {
 }
 
 /// Return distance to (0, 0).
-Point.prototype.length = function() {
+Point.prototype.len = function() {
   return Math.sqrt(this.x*this.x+this.y*this.y);
 }
 
 /// Return quadratic distance to (0, 0).
-Point.prototype.length2 = function() {
+Point.prototype.len2 = function() {
   return this.x*this.x+this.y*this.y;
 }
 
@@ -83,19 +94,20 @@ Point.prototype.cross = function(other) {
 
 /// Return true if x and y components of this do not differ more than eps from other.
 Point.prototype.equals = function(other, eps) {
-  return (Math.abs(this.x-other.x) < eps) && (Math.abs(this.y-other.y) < eps);
+  return (Math.abs(this.x-other.x) <= eps) && (Math.abs(this.y-other.y) <= eps);
 }
 
-/// Returns a new vector with same direction as this but length of 1. Not defined
-/// for vector (0, 0).
+/// Returns a new vector with same direction as this but len of 1. (NaN, Nan) for
+/// vector (0, 0).
 Point.prototype.normalize = function() {
-  var l = 1/this.length();
+  var l = 1/this.len();
   return new Point(this.x*l, this.y*l);
 }
 
-/// Scales this vector to a length of 1 and returns this.
+/// Scales this vector to a len of 1 and returns this. (NaN, Nan) for vector
+/// (0, 0).
 Point.prototype.Normalize = function() {
-  var l = 1/this.length();
+  var l = 1/this.len();
   this.x *= l; this.y *= l;
   return this;
 }
@@ -130,7 +142,7 @@ Point.get_closest_point_on_segment = function(A, B, P) {
   var AB = B.sub(A), ABn = AB.normalize();
   var k = ABn.mul(P.sub(A));
   if (k<0) return A;
-  if (k>AB.length()) return B;
+  if (k>AB.len()) return B;
   return A.add(ABn.scale(k));
 }
 
@@ -173,7 +185,7 @@ Point.intersect_ray_with_segment = function(R, v, A, B, intersection, margin) {
     intersection.x = hit.x; intersection.y = hit.y;
   } else {
     // devisor is zero so first check check for A!=B and v!=0
-    if (v.length2() < Point.EPS || AB.length2() < Point.EPS)
+    if (v.len2() < Point.EPS || AB.len2() < Point.EPS)
       return false;
     // okay, A!=B and v!=0 so this means the lines are parallel
     // we project R onto AB to get its relative position k: R' = A + k*(B-A)
