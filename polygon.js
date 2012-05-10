@@ -420,7 +420,7 @@ Polygon.prototype.sampleBezier = function(A, B, C, D) {
 
   // vector AD on which we will project
   var AD = D.sub(A);
-  if (AD.length() < EPS) {
+  if (AD.len() < EPS) {
     // start point A and end point D of the curve are very close to each other,
     // we will asume they are identical here and project onto AB or AC instead
     // of AD
