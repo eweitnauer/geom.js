@@ -30,6 +30,13 @@ Polygon.prototype.copy = function() {
   return p;
 }
 
+/// Translates the polygons so its centroid is at 0,0.
+Polygon.prototype.move_to_origin = function() {
+  var N = this.pts.length;
+  var c = this.centroid();
+  for (var i=0; i<N; i++) this.pts[i].Sub(c);
+}
+
 Polygon.prototype.push = function(pt) {
   this.pts.push(pt);
   return this.pts;

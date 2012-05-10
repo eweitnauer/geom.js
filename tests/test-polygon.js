@@ -20,6 +20,14 @@ exports['copy'] = function(test) {
   test.done();  
 }
 
+exports['move_to_origin'] = function(test) {
+  var p = new Polygon([[-1,-1],[0,-1],[0,0],[-1,0]]);
+  p.move_to_origin();
+  test.deepEqual(p, new Polygon([[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5]]));
+  test.deepEqual(p.centroid(), new Point(0,0));
+  test.done();
+}
+
 exports['order_vertices'] = function(test) {
   var p = new Polygon([[0,0],[-1,1],[1,1]]);
   var q = new Polygon([[1,1],[-1,1],[0,0]]);

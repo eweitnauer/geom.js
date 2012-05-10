@@ -6,7 +6,7 @@ Circle = function(cx, cy, r) {
   this.r = r;
 }
 
-Circle.prototype.clone = function() {
+Circle.prototype.copy = function() {
   return new Circle(this.x, this.y, this.r);
 }
 
@@ -16,6 +16,10 @@ Circle.prototype.centroid = function() {
 
 Circle.prototype.area = function() {
   return Math.PI * this.r * this.r;
+}
+
+Circle.prototype.move_to_origin = function() {
+  this.x = 0; this.y = 0;
 }
 
 // If the passed path SVG element was originally a circle and written as a path
