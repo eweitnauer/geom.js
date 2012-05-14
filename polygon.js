@@ -98,7 +98,7 @@ Polygon.prototype.get_edge_lengths = function(sorted) {
   var a = [], N = this.pts.length;
   for (var i=0; i<N-1; ++i) a.push(this.pts[i].dist(this.pts[i+1]));
   if (this.closed && N>1) a.push(this.pts[0].dist(this.pts[N-1]));
-  if (sorted) a.sort();
+  if (sorted) a.sort(function(a,b) {return a-b}); // by default, some browsers sort lexically
   return a;
 }
 
