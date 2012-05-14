@@ -15,6 +15,7 @@ Array.prototype.remove = function(from, to) {
   return this.concat(rest);
 };
 
+/// The polygon is initialized as 'closed'.
 Polygon = function(pts) {
   this.pts = [];
   this.closed = true;
@@ -88,6 +89,17 @@ Polygon.prototype.centroid = function() {
     c = c.scale(1./N);
   }
   return c;
+}
+
+/// Returns an array of edge lengths. If 'sorted' is 'true', the lengths are sorted in ascending
+/// order. Otherwise, the edges are sorted like the vertices. Only if the polygon is closed, the
+/// edge between last and first vertex is included in the array.
+Polygon.prototype.get_edge_lengths = function(sorted) {
+  var a = [], N = this.pts.length;
+  for (var i=0; i<N-1; ++i) a.push(this.pts[i].dist(this.pts[i+1]));
+  if (this.closed && N>1) a.push(this.pts[0].dist(this.pts[N-1]));
+  if (sorted) a.sort();
+  return a;
 }
 
 /// Returns true if the vertex is convex. (Ordered!)

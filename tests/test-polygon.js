@@ -38,6 +38,23 @@ exports['order_vertices'] = function(test) {
   test.done();
 }
 
+exports['get_edge_lengths'] = function(test) {
+  var p = new Polygon();
+  p.add_points([[0,0],[4,0],[4,3]]);
+  test.deepEqual([4, 3, 5], p.get_edge_lengths());
+  test.deepEqual([3, 4, 5], p.get_edge_lengths(true));
+
+  p.closed = false;
+  test.deepEqual([4, 3], p.get_edge_lengths());
+  
+  var p = new Polygon();
+  test.deepEqual([], p.get_edge_lengths(true));
+  p.push(new Point(0,0));
+  test.deepEqual([], p.get_edge_lengths(true));
+  
+  test.done();
+}
+
 exports['area'] = function(test) {
   var p = new Polygon();
   p.add_points([[0,0],[0,1],[1,0]]);
