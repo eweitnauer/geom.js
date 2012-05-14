@@ -328,7 +328,12 @@ Polygon.prototype.toString = function() {
   return '(' + points.join(' ') + ')';
 }
 
-Polygon.fromSVGPath = function(path_node, max_error) {
+/** Parses a svg path decripition, samples it with a number of linear pieces (so that the sampling
+  error is no bigger that max_error) and returns the result as a Polygon. If last and first vertex
+  are closer than 1e-3 to each other, the 'closed' property of the Polygon is set to 'true'. If the
+  'remove_duplicates' parameter is passed as true, adjacent vertices that are closer to each other
+  than 1e-3 are merged. */
+Polygon.fromSVGPath = function(path_node, max_error, remove_duplicates) {
   var poly = new Polygon();
   poly.closed = false;
   poly.max_error = max_error;
@@ -397,10 +402,8 @@ Polygon.fromSVGPath = function(path_node, max_error) {
       }
     }
   }
-  if (poly.pts.length>1 && poly.pts[0].equals(poly.pts[poly.pts.length-1], 1e-6)) {
-    poly.closed = true;
-    poly.pts.pop();
-  }
+  if (poly.pts.length>1 && poly.pts[0].equals(poly.pts[poly.pts.length-1], 1e-3)) poly.closed = true;
+  if (remove_duplicates) poly.remove_superfical_vertices({max_error: 1e-3});
   return poly;
 }
 
