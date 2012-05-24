@@ -7,23 +7,26 @@ The matrix array contains the row vectors as Vectors.*/
 /// Constructor, takes an array of row arrays as argument.
 function Matrix(rows) {
   var arr = [];
+  arr.M = rows ? rows.length : 0;
   if (rows) {
-    var col_count = rows[0].length;
+    arr.N = rows[0].length;
     for (var i=0; i<rows.length; i++) {
-      if (rows[i].length != col_count) throw "all rows must have the same length";
+      if (rows[i].length != arr.N) throw "all rows must have the same length";
       if (rows[i] instanceof Vector) arr.push(rows[i]); else arr.push(new Vector(rows[i]));
     }
-  }
+  } else arr.N = 0;
   arr.__proto__ = Matrix.prototype;
   return arr;
 }
 Matrix.prototype = new Array;
 
 /// Returns a new rows x cols matrix instance with all values set to val.
-Matrix.construct = function(rows, cols, val) {
+Matrix.construct = function(M, N, val) {
   if (!val) val = 0;
   var m = new Matrix();
-  for (var i=0; i<rows; i++) m.push(Vector.construct(cols, val));
+  for (var i=0; i<M; i++) m.push(Vector.construct(N, val));
+  m.M = M;
+  m.N = N;
   return m;
 }
 
@@ -45,9 +48,9 @@ Matrix.prototype.Set = function(y,x,val) {
 
 /// Returns the results of the vector multiplication with v as a new Vector instance.
 Matrix.prototype.mul = function(v) {
-  if (this.length > 0 && this[0].length != v.length) throw "dimensions do not match, Matrix-Vector multiplication not possible"
+  if (this.N != v.length) throw "dimensions do not match, Matrix-Vector multiplication not possible"
   var res = new Vector();
-  for (var i=0; i<this.length; i++) res.push(this[i].mul(v));
+  for (var i=0; i<this.M; i++) res.push(this[i].mul(v));
   return res;
 }
 
