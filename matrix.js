@@ -27,6 +27,13 @@ Matrix.construct = function(rows, cols, val) {
   return m;
 }
 
+/// Returns a new rows x cols matrix instance with all values set to val.
+Matrix.random = function(rows, cols) {
+  var m = new Matrix();
+  for (var i=0; i<rows; i++) m.push(Vector.random(cols));
+  return m;
+}
+
 Matrix.prototype.get = function(y,x) {
   return this[y][x];
 }

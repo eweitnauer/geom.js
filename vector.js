@@ -6,17 +6,27 @@ http://perfectionkills.com/how-ecmascript-5-still-does-not-allow-to-subclass-an-
 /// Constructor, takes an array of values as argument.
 function Vector(vals) {
   var arr = [];
-  if (vals) arr.push.apply(arr, vals);
+  if (vals && vals != []) arr.push.apply(arr, vals);
   arr.__proto__ = Vector.prototype;
   return arr;
 }
 Vector.prototype = new Array;
+
+Vector.prototype.has_index = function(key) {
+  return this.hasOwnProperty(key);
+}
 
 /// Returns a new vector of length len with all values set to val.
 Vector.construct = function(len, val) {
   if (!val) val = 0;
   var v = new Vector();
   for (var i=0; i<len; i++) v.push(val);
+  return v;
+}
+
+Vector.random = function(len) {
+  var v = new Vector();
+  for (var i=0; i<len; i++) v.push(Math.random());
   return v;
 }
 
