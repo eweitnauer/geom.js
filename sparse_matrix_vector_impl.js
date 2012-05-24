@@ -2,7 +2,10 @@
 
 /** SparseMatrix is a subclass of array. I use the Prototype chain injection method described in
 http://perfectionkills.com/how-ecmascript-5-still-does-not-allow-to-subclass-an-array/ for it.
-The matrix array contains the row vectors as Vectors.*/
+The matrix array contains the row vectors as Vectors.
+
+This is slower than the SparseMatrix implementation based on triplets, so better use the definition
+in sparse_matrix.js. */
 
 /// Constructor, takes an array of row SparseVectors as arguments.
 function SparseMatrix(M, N) {
