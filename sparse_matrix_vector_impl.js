@@ -5,34 +5,22 @@ http://perfectionkills.com/how-ecmascript-5-still-does-not-allow-to-subclass-an-
 The matrix array contains the row vectors as Vectors.*/
 
 /// Constructor, takes an array of row SparseVectors as arguments.
-function SparseMatrix(rows) {
+function SparseMatrix(M, N) {
   var arr = [];
-  if (rows) {
-    var N = rows[0].N;
-    for (var i=0; i<rows.length; i++) {
-      if (rows[i].N != N) throw "all rows must have the same length";
-      if (!(rows[i] instanceof SparseVector)) throw "only sparse vectors are allowed as rows";
-      arr.push(rows[i]);
-    }
-  }
+  arr.M = M || 0;
+  arr.N = N || 0;
+  if (arr.M) for (var i=0; i<arr.M; i++) arr.push(new SparseVector(arr.N));
   arr.__proto__ = SparseMatrix.prototype;
   return arr;
 }
 SparseMatrix.prototype = new Array;
-
-/// Returns a new rows x cols matrix instance.
-SparseMatrix.construct = function(rows, cols) {
-  var m = new SparseMatrix();
-  for (var i=0; i<rows; i++) m.push(new SparseVector(cols));
-  return m;
-}
 
 SparseMatrix.prototype.get = function(i,j) {
   return this[i].get(j);
 }
 
 SparseMatrix.prototype.Set = function(i,j,val) {
-  this[i][j] = val;
+  this[i].el[j] = val;
   return this;
 }
 
