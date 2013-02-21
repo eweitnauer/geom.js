@@ -140,7 +140,7 @@ Polygon.prototype.find_intersection = function(origin, direction,
     // check whether we should omit the current edge
     if (omit1 < N && (i == omit1 || (N+i+1-omit1)%N==0)) continue;
     if (omit2 < N && (i == omit2 || (N+i+1-omit2)%N==0)) continue;
-    
+
     var hit = new Point();
     if (Point.intersect_ray_with_segment(origin, direction, this.pts[(i+1)%N], this.pts[i], hit)) {
       if (closest_hit_idx == N || hit.dist2(origin) < closest_intersection.dist2(origin)) {
@@ -172,7 +172,7 @@ Polygon.prototype.is_visible = function(v1, v2) {
   } else {
     if (!(convex_a_v1_v2 || convex_v1_c_v2)) return false;
   }
-  // therefore if v1 is a convex corner, 
+  // therefore if v1 is a convex corner,
   var hit = new Point();
   var idx = this.find_intersection(this.pts[v1], this.pts[v2].sub(this.pts[v1]), hit, v1, v2);
   if (idx == N) return true;
@@ -308,7 +308,7 @@ Polygon.prototype.remove_superfical_vertices = function(args) {
     for (;;) {
       if (N <= args.min_vertex_count) return;
       var A = this.pts[(N+i-1)%N], C = this.pts[(i+1)%N];
-      // if this.pts[i] is lying between A and C, we can simply take its distance to 
+      // if this.pts[i] is lying between A and C, we can simply take its distance to
       // AC as the error
       var AC = C.sub(A), ACn = AC.normalize();
       var prod = AC.mul(this.pts[i].sub(A));
@@ -340,6 +340,18 @@ Polygon.prototype.toString = function() {
   return '(' + points.join(' ') + ')';
 }
 
+/** Parses an SVG rect node into a new closed Polygon with 4 vertices.*/
+Polygon.fromSVGRect = function(rect_node) {
+  var poly = new Polygon();
+  var x = Number(rect_node.getAttribute('x'))
+     ,y = Number(rect_node.getAttribute('y'))
+     ,w = Number(rect_node.getAttribute('width'))
+     ,h = Number(rect_node.getAttribute('height'));
+  poly.add_points([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]);
+  poly.order_vertices();
+  return poly;
+}
+
 /** Parses a svg path decripition, samples it with a number of linear pieces (so that the sampling
   error is no bigger that max_error) and returns the result as a Polygon. If last and first vertex
   are closer than 1e-3 to each other, the 'closed' property of the Polygon is set to 'true'. If the
@@ -349,13 +361,13 @@ Polygon.fromSVGPath = function(path_node, max_error, remove_duplicates) {
   var poly = new Polygon();
   poly.closed = false;
   poly.max_error = max_error;
-  
+
   // get the path segments, insert their start and end points and depending
   // on their type more points to interpolate curved parts
   var segs = []
   var segList = path_node.pathSegList;
   for (var i=segList.numberOfItems-1; i>=0; --i) segs[i] = segList.getItem(i);
-  
+
   /// iterate over segments
   var ep = new Point(0,0), cp = null; // current end point
   for (var i=0; i<segs.length; ++i) {
@@ -401,7 +413,7 @@ Polygon.fromSVGPath = function(path_node, max_error, remove_duplicates) {
           var mirror_cp = new Point(2*ep.x-cp.x, 2*ep.y-cp.y);
           cp = new Point(seg.x2+ep.x, seg.y2+ep.y);
           ep = poly.sampleBezier(ep, mirror_cp, cp, new Point(seg.x+ep.x, seg.y+ep.y));
-          break;      
+          break;
         case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
           cp = new Point(2*ep.x-cp.x, 2*ep.y-cp.y);
           ep = poly.sampleBezier2(ep, cp, new Point(seg.x, seg.y));
@@ -416,6 +428,7 @@ Polygon.fromSVGPath = function(path_node, max_error, remove_duplicates) {
   }
   if (poly.pts.length>1 && poly.pts[0].equals(poly.pts[poly.pts.length-1], 1e-3)) poly.closed = true;
   if (remove_duplicates) poly.remove_superfical_vertices({max_error: 1e-3});
+  poly.order_vertices();
   return poly;
 }
 
@@ -448,10 +461,12 @@ Polygon.prototype.sampleBezier = function(A, B, C, D) {
     // of AD
     AD = (B.dist(A) > B.dist(C)) ? B.sub(A) : B.sub(C);
   }
-  AD.Normalize();
-  // now we project B and C onto AD (A and D will be projected to 0)
-  var b = (B.sub(A)).mul(AD);
-  var c = (C.sub(A)).mul(AD);
+  // now get the perpendicular to AD
+  var pAD = new Point(-AD.y, AD.x);
+  pAD.Normalize();
+  // now we project B and C onto the perpendicular vector to AD (A and D will be projected to 0)
+  var b = (B.sub(A)).mul(pAD);
+  var c = (C.sub(A)).mul(pAD);
 
   // the bezier curve still has the same form:
   // p(t) = (1-t)^3*a + 3(1-t)^2*t*b + 3(1-t)*t^2*c + t^3*d
@@ -482,16 +497,16 @@ Polygon.prototype.sampleBezier = function(A, B, C, D) {
     {
       var t1 = 0.5 * (-k2 - Math.sqrt(discriminant)) / k1;
 	    var t2 = 0.5 * (-k2 + Math.sqrt(discriminant)) / k1;
-	
+
 	    var v_min = 0.0, v_max = 0.0;
 	    var val1 = 0.0, val2 = 0.0;
-	
+
 	    if(0.0 < t1 && t1 < 1.0) {// t has to be in the interval [0,1]
 		    val1 = 3.0 * (b*(1-t1)*(1-t1)*t1 + c*(1-t1)*t1*t1);
 		    v_min = Math.min(v_min, val1);
 		    v_max = Math.max(v_max, val1);
 	    }
-	
+
 	    if(0.0 < t2 && t2 < 1.0) {// t has to be in the interval [0,1]
 		    val2 = 3.0 * (b*(1-t2)*(1-t2)*t2 + c*(1-t2)*t2*t2);
 		    v_min = Math.min(v_min, val2);
@@ -522,7 +537,7 @@ Polygon.prototype.sampleBezier = function(A, B, C, D) {
   }
   return D;
 }
-  
+
 /// 2nd order bezier curve interpolation (by using 3rd order implementation).
 /// Adds points to the polygon, except start and end point. Returns end point.
 Polygon.prototype.sampleBezier2 = function(a, b, c) {
@@ -544,7 +559,7 @@ Polygon.prototype.renderInSvg = function(doc, parent_node, vertex_element) {
   poly.style.setProperty('fill', 'none');
   parent_node.appendChild(poly);
   if (vertex_element) for (var i=0; i<this.pts.length; ++i) {
-    var ve = vertex_element.copyNode(true);
+    var ve = vertex_element.cloneNode(true);
     ve.setAttribute('cx', this.pts[i].x);
     ve.setAttribute('cy', this.pts[i].y);
     parent_node.appendChild(ve);
