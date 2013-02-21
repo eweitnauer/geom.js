@@ -1,7 +1,7 @@
 var svg_polys = [];
 var max_err = 0.1;
 
-var svg_content = 
+var svg_content =
  '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
   <svg\
     xmlns:dc="http://purl.org/dc/elements/1.1/"\
@@ -19,6 +19,7 @@ var svg_content =
     s2p-restitution="0.4"\
     s2p-friction="0.3">\
     <g id="main_group" s2p-scene-id="1" transform="scale(4,4)">\
+      <path id="error-size" style="stroke:black; stroke-width: 1px; stroke-linecap: butt;"></path>\
       <path\
         d="M10,20 C10,10 25,10 25,20 S40,30 40,20Z"\
         id="path0002"\
@@ -34,6 +35,10 @@ var svg_content =
         id="path0003"\
         style="fill: none; stroke: black; stroke-width: 1px;"\
         transform="translate(0,95)"/>\
+      <path\
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"\
+       d="M 0.49293417,65.330296 C 25.796888,65.001673 41.40647,65.165985 41.40647,65.165985 c -0.05477,6.598491 0.05477,13.842556 1e-6,20.867547 l 34.669703,-0.164312 -0.164311,-20.538923 23.003595,0.328622 0.328623,0"\
+       id="path2997"/>\
     </g>\
   </svg>';
 
@@ -46,7 +51,7 @@ parseXml = function(xml) {
     xml = xml.replace(/<!DOCTYPE svg[^>]*>/, '');
     var xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
     xmlDoc.async = 'false';
-    xmlDoc.loadXML(xml); 
+    xmlDoc.loadXML(xml);
     return xmlDoc;
   }
 }
@@ -57,15 +62,15 @@ function init() {
   // read content into DOM tree
   svg = parseXml(svg_content);
 
-  display = document.getElementById('svg_element'); 
-  
+  display = document.getElementById('svg_element');
+
   var root = svg.documentElement;
   var nsResolver = svg.createNSResolver(root);
 
   // display the correct paths (in black)
   var g = root.getElementById('main_group');
   display.appendChild(g.cloneNode(true));
-  
+
   // interpolate and show polygons
   interpolate_polygons();
 }
@@ -74,14 +79,18 @@ function interpolate_polygons() {
   // remove old polygons
   gs.forEach(function(p) { p.parentElement.removeChild(p); })
   gs = [];
-  
+
+  // add line of length 10
+  var line_node = document.getElementById("error-size");
+  line_node.setAttribute('d', 'M100,10 H'+(100+max_err));
+
   // setup marker for vertices
   if (!circle_node) {
     circle_node = document.createElementNS('http://www.w3.org/2000/svg','circle');
     circle_node.setAttribute('r', 1);
     circle_node.style.setProperty('fill', 'blue');
   }
-  
+
   polys = [];
   // interpolate and display
   var path_nodes = svg.documentElement.getElementsByTagName('path');
