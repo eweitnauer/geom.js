@@ -13,26 +13,26 @@ exports['Point'] = function(test) {
   var a = new Point();
   var b = new Point(1,2);
   var c = new Point(b);
-  
+
   test.equal(a.x, 0);
   test.equal(a.y, 0);
-  
+
   test.equal(b.x, 1);
   test.equal(b.y, 2);
-  
+
   test.deepEqual(c, b);
   test.notEqual(c, b);
-  
-  test.done();  
+
+  test.done();
 }
 
 exports['equals'] = function(test) {
   var a = new Point(-1,-2);
-  
+
   test.ok(a.equals(new Point(-1,-2), 0));
   test.ok(a.equals(new Point(-1.5,-2), 0.5));
   test.ok(!a.equals(new Point(-1.5,-2), 0.4999));
-  
+
   test.done();
 }
 
@@ -44,7 +44,7 @@ exports['normalize, Normalize'] = function(test) {
   test.fequal(a.normalize().x, -1 * l);
   test.fequal(a.normalize().y, -2 * l);
   test.deepEqual(a, new Point(-1,-2));
-  
+
   // Normalize
   a.Normalize();
   test.fequal(a.x, -1 * l);
@@ -75,12 +75,12 @@ exports['add, Add'] = function(test) {
 
   test.equal(a.add(b).x, 1);
   test.equal(a.add(b).y, 1);
- 
+
   var a2 = a.Add(b);
   test.equal(a2, a);
   test.equal(a.x, 1);
   test.equal(a.y, 1);
-  
+
   test.done();
 }
 
@@ -95,7 +95,7 @@ exports['sub, Sub'] = function(test) {
   test.equal(a2, a);
   test.equal(a.x, -3);
   test.equal(a.y, -5);
-  
+
   test.done();
 }
 
@@ -126,7 +126,7 @@ exports['cross'] = function(test) {
 exports['dist, dist2'] = function(test) {
   var a = new Point(-1,-2);
   var b = new Point(2,3);
-  
+
   test.equal(a.dist(a), 0);
   test.fequal(a.dist(b), Math.sqrt(34.));
   test.fequal(b.dist(a), Math.sqrt(34.));
@@ -140,6 +140,7 @@ exports['len, len2'] = function(test) {
   var a = new Point(-1,-2);
 
   test.fequal(a.len(), Math.sqrt(5.));
+  test.fequal(Point.len(-1,-2), Math.sqrt(5));
   test.equal(a.len2(), 5.);
   test.done();
 }
@@ -147,7 +148,7 @@ exports['len, len2'] = function(test) {
 exports['Set'] = function(test) {
   var a = new Point(-1,2);
   var b = new Point(2,3);
-  
+
   a.Set(b);
   test.notEqual(a, b);
   test.deepEqual(a, b);
@@ -158,7 +159,7 @@ exports['Set'] = function(test) {
 exports['copy'] = function(test) {
   var a = new Point(-1,2);
   var b = a.copy();
-  
+
   test.notEqual(a, b);
   test.deepEqual(a, b);
 
@@ -168,15 +169,15 @@ exports['copy'] = function(test) {
 exports['rotate, Rotate'] = function(test) {
   var a = new Point(0,1);
   var b = a.rotate(0.5*Math.PI);
-  
+
   test.equal(a.x, 0);
   test.equal(a.y, 1);
   test.fequal(b.x, -1);
   test.fequal(b.y, 0);
-  
+
   a.Rotate(-0.5*Math.PI);
   test.fequal(a.x, 1);
-  test.fequal(a.y, 0);  
+  test.fequal(a.y, 0);
 
   test.done();
 }
@@ -186,22 +187,22 @@ exports['get_closest_point_on_segment'] = function(test) {
   var C = Point.get_closest_point_on_segment(A, B, P);
   test.fequal(C.x, -0.5);
   test.fequal(C.y, 0.5);
-  
+
   A = new Point(0,0); B = new Point(1,0); P = new Point(-1,3);
   C = Point.get_closest_point_on_segment(A, B, P);
   test.fequal(C.x, 0);
   test.fequal(C.y, 0);
-  
+
   A = new Point(0,0); B = new Point(1,0); P = new Point(5,-1);
   C = Point.get_closest_point_on_segment(A, B, P);
   test.fequal(C.x, 1);
   test.fequal(C.y, 0);
-  
+
   A = new Point(0,0); B = new Point(1,0); P = new Point(0.2,0);
   C = Point.get_closest_point_on_segment(A, B, P);
   test.fequal(C.x, 0.2);
   test.fequal(C.y, 0);
-  
+
   test.done();
 }
 
@@ -213,14 +214,14 @@ exports['intersect_ray_with_segment'] = function(test) {
   test.ok(Point.intersect_ray_with_segment(R, v, A, B, hit));
   test.fequal(hit.x, 0);
   test.fequal(hit.y, 0);
-  
+
   // intersect with A
   R = new Point(0,10); v = new Point(-0.1,-1);
   A = new Point(-1,0); B = new Point(10,0);
   test.ok(Point.intersect_ray_with_segment(R, v, A, B, hit));
   test.fequal(hit.x, -1);
   test.fequal(hit.y, 0);
-  
+
   // intersect with B
   R = new Point(0,10); v = new Point(1,-1);
   A = new Point(-1,-1); B = new Point(10,0);
@@ -241,12 +242,12 @@ exports['intersect_ray_with_segment'] = function(test) {
   test.ok(Point.intersect_ray_with_segment(R, v, A, B, hit));
   test.fequal(hit.x, 0);
   test.fequal(hit.y, 0);
-  
+
   // no intersection (wrong direction)
   R = new Point(0,1); v = new Point(0,1);
   A = new Point(-1,0); B = new Point(1,0);
   test.ok(!Point.intersect_ray_with_segment(R, v, A, B, hit));
-  
+
   // no intersection (parallel lines)
   R = new Point(0,1); v = new Point(1,0);
   A = new Point(-1,0); B = new Point(1,0);

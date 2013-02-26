@@ -1,7 +1,7 @@
 /// Copyright by Erik Weitnauer, 2012.
 
 /// The point class represents a point or vector in R^2. The interpretations as
-/// vector or point are used interchangingly below. 
+/// vector or point are used interchangingly below.
 
 /// Constructor. Either pass a point instance or x, y coordinates. If nothing is
 /// passed, the point is initialized with 0, 0.
@@ -48,6 +48,11 @@ Point.prototype.dist = function(other) {
 Point.prototype.dist2 = function(other) {
   var dx = this.x-other.x, dy = this.y-other.y;
   return dx*dx + dy*dy;
+}
+
+/// Class method returning the length of vector (x,y).
+Point.len = function(x, y) {
+  return Math.sqrt(x*x+y*y);
 }
 
 /// Return distance to (0, 0).
@@ -158,7 +163,7 @@ Point.get_closest_point_on_segment = function(A, B, P) {
  * In order not to miss an intersection with the ray and one of the end points
  * of AB, the method will regard very close misses (which are closer than
  * margin) as collisions, too.
- * 
+ *
  * Params:
  *   R: start of ray (Point)
  *   v: direction vector of ray (Point)
@@ -175,7 +180,7 @@ Point.intersect_ray_with_segment = function(R, v, A, B, intersection, margin) {
   // so we start with calculating the divisor
   var AB = B.sub(A);
   var divisor = v.cross(AB);
-  if (Math.abs(divisor) > Point.EPS) { 
+  if (Math.abs(divisor) > Point.EPS) {
     // divisor is not zero -- no parallel lines!
     // now calculate l
     var l = (A.sub(R)).cross(v) / divisor;
@@ -190,7 +195,7 @@ Point.intersect_ray_with_segment = function(R, v, A, B, intersection, margin) {
     // okay, A!=B and v!=0 so this means the lines are parallel
     // we project R onto AB to get its relative position k: R' = A + k*(B-A)
     var k = R.sub(A).mul(AB) / AB.mul(AB);
-    // now first check, whether v and AB are colinear    
+    // now first check, whether v and AB are colinear
     if (A.add(AB.scale(k)).dist(R) > Point.EPS) return false;
     // they are colinear so there might be an intersection, but it depends where
     // R is relative to AB
