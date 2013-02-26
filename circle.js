@@ -27,7 +27,7 @@ Circle.prototype.move_to_origin = function() {
 // the path does not resemble a circle, it will return null.
 // If exclude_ellipse is passed as true, the program will reject cases in which
 // rx differs from ry (default: true).
-Circle.fromSVGPath = function(path_node, exclude_ellipse) {
+Circle.fromSVGPath = function(path_node) {
   if (typeof(exclude_ellipse) == 'undefined') exclude_ellipse = true;
   var ns = path_node.lookupNamespaceURI('sodipodi');
   var get_attr = function(attr) { return path_node.getAttributeNS(ns, attr) };
@@ -35,10 +35,20 @@ Circle.fromSVGPath = function(path_node, exclude_ellipse) {
   if (get_attr('type') == 'arc' && (cx = get_attr('cx')) && (cy = get_attr('cy')) &&
       (rx = get_attr('rx')) && (ry = get_attr('ry')))
   {
+    // check whether this is a full circle (|start-end| = 2*PI)
+    var start = get_attr('start'), end = get_attr('end');
+    if (start && end) {
+      var diff = Math.abs(Number(start)-Number(end));
+      diff = Math.abs(diff - 2*Math.PI);
+      if (diff > 0.01) {
+        console.log("Warning: this is a circle segment! ||start-end|-2*PI| =", diff);
+        return null;
+      }
+    }
     rx = Number(rx); ry = Number(ry); cx = Number(cx); cy = Number(cy);
-    if (Math.abs(rx-ry) > Point.EPS) {
-      console.log("Warning: This is an ellipse, no circle! rx", rx, "ry", ry);
-      if (exclude_ellipse) return null;
+    if (Math.abs(rx/ry-1) > 0.05) {
+      console.log("Warning: This is an ellipse! rx", rx, "ry", ry);
+      return null;
     }
     return new Circle(cx, cy, (rx+ry)/2);
   }
