@@ -17,7 +17,15 @@ exports['copy'] = function(test) {
   p.max_error = 0.1;
   var p_cloned = p.copy();
   test.deepEqual(p_cloned, p);
-  test.done();  
+  test.done();
+}
+
+exports['back'] = function(test) {
+  var p = new Polygon([[0,0],[-1,1],[1,1]]);
+  test.deepEqual(p.back(), new Point(1,1));
+  var p = new Polygon();
+  test.equal(p.back(), undefined);
+  test.done();
 }
 
 exports['move_to_origin'] = function(test) {
@@ -34,7 +42,7 @@ exports['order_vertices'] = function(test) {
   p.order_vertices();
   test.deepEqual(p,q);
   q.order_vertices();
-  test.deepEqual(q,p);  
+  test.deepEqual(q,p);
   test.done();
 }
 
@@ -46,12 +54,12 @@ exports['get_edge_lengths'] = function(test) {
 
   p.closed = false;
   test.deepEqual([4, 3], p.get_edge_lengths());
-  
+
   var p = new Polygon();
   test.deepEqual([], p.get_edge_lengths(true));
   p.push(new Point(0,0));
   test.deepEqual([], p.get_edge_lengths(true));
-  
+
   test.done();
 }
 
@@ -86,12 +94,12 @@ exports['remove_superfical_vertices'] = function(test) {
   p_correct = new Polygon([[0,0], [2,0], [3,4], [0,4], [1,2]]);
   p.remove_superfical_vertices({max_error: 0.51});
   test.deepEqual(p.pts, p_correct.pts);
-  
+
   p = new Polygon([[0,0], [1,0.5], [2,0], [3,4], [2,4], [0,4], [1,2]]);
   p_correct = new Polygon([[0,0], [2,0], [3,4], [0,4]]);
   p.remove_superfical_vertices({max_error: 1.1});
   test.deepEqual(p.pts, p_correct.pts);
-  
+
   p = new Polygon([[0,0], [1,0], [1,-1], [1,2]]);
   p_correct = new Polygon([[0,0], [1,0], [1,-1], [1,2]]);
   p.remove_superfical_vertices({max_error: 0.1});
@@ -101,7 +109,7 @@ exports['remove_superfical_vertices'] = function(test) {
   p_correct = new Polygon([[0,0], [1,0], [1,3], [1,2]]);
   p.remove_superfical_vertices({max_error: 0.1});
   test.deepEqual(p.pts, p_correct.pts);
-  
+
   test.done();
 }
 
@@ -206,7 +214,7 @@ exports['is_visible'] = function(test) {
   test.ok(p.is_visible(7,3));
   test.ok(p.is_visible(7,2));
   test.ok(p.is_visible(7,1));
-  
+
   test.done();
 }
 
@@ -225,17 +233,17 @@ exports['centroid'] = function(test) {
   var c = p.centroid();
   test.fequal(c.x, 1);
   test.fequal(c.y, 2);
-  
+
   p.push(new Point(1,1));
   c = p.centroid();
   test.fequal(c.x, 1);
   test.fequal(c.y, 1.5);
-  
+
   p.push(new Point(2,1));
   c = p.centroid();
   test.fequal(c.x, 4./3.);
   test.fequal(c.y, 4./3.);
-  
+
   p.push(new Point(2,1.5));
   p.push(new Point(2,2));
   c = p.centroid();
@@ -278,7 +286,7 @@ exports['convex_decomposition'] = function(test) {
   var ps = p.convex_decomposition({
     debug_text: false,
     preprocess: true,
-    pre_order_vertices: true, 
+    pre_order_vertices: true,
     pre_merge_vertices_min_dist: 0.1,
     pre_remove_vertices_max_error: 0.1,
     max_vertices: 8,

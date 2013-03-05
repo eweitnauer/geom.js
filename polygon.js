@@ -1,18 +1,13 @@
-/// Copyright by Erik Weitnauer, 2012.
-
-Array.prototype.back = function() {
-  return this[this.length-1];
-}
-
-Array.prototype.front = function() {
-  return this[0];
-}
+/// Copyright by Erik Weitnauer, 2012-2013.
 
 // Array Remove - adopted from John Resig (MIT Licensed)
-Array.prototype.remove = function(from, to) {
-  var rest = this.slice((to || from) + 1 || this.length);
-  this.length = from < 0 ? this.length + from : from;
-  return this.concat(rest);
+// Will remove all elements between (including) from and to. Use negative indices
+// to count from the back. In-place operation, returns the new length.
+Array.remove = function(array, from, to) {
+  var rest = array.slice((to || from) + 1 || array.length);
+  array.length = Math.max(0, from < 0 ? array.length + from : from);
+  for (var i=0; i<rest.length; i++) array.push(rest[i]);
+  return array.length;
 };
 
 /// The polygon is initialized as 'closed'.
@@ -47,6 +42,11 @@ Polygon.prototype.add_points = function(pts) {
   for (var i=0; i<pts.length; ++i) this.pts.push(new Point(pts[i][0], pts[i][1]));
 }
 
+/// Returns the last vertex.
+Polygon.prototype.back = function() {
+  return this.pts[this.pts.length-1];
+}
+
 /// Ensures that the vertices are ordered counter-clockwise.
 /** The vertices are reversed if they are in clockwise order. */
 Polygon.prototype.order_vertices = function() {
@@ -60,7 +60,7 @@ Polygon.prototype.order_vertices = function() {
  * non self-intersecting polygons. */
 Polygon.prototype.area = function() {
   var res = 0.0;
-  var prev = this.pts.back();
+  var prev = this.back();
   for (var i=0; i<this.pts.length; i++) {
     res += prev.cross(this.pts[i]);
     prev = this.pts[i];
@@ -78,7 +78,7 @@ Polygon.prototype.centroid = function() {
   if (N==0) return c;
   var A = this.area();
   if (Math.abs(A) >= Point.EPS) { // area not zero, use accurate formular
-    var prev = this.pts.back();
+    var prev = this.back();
     for (var i=0; i<N; ++i) {
       c = c.add(prev.add(this.pts[i]).scale(prev.cross(this.pts[i])));
       prev = this.pts[i];
@@ -269,19 +269,19 @@ Polygon.prototype.merge_vertices = function(args) {
     if (N <= args.min_vertex_count) return;
     var mpts = [];
     // first check, whether first and last point can be merged
-    if (this.pts.front().dist(this.pts.back()) < args.min_dist) {
+    if (this.pts[0].dist(this.back()) < args.min_dist) {
       // yes, so merge them and omit the last point later
-      mpts.push(this.pts.back().add(this.pts.front()).scale(0.5));
+      mpts.push(this.back().add(this.pts[0]).scale(0.5));
       N -= 1;
       changed = true;
     } else {
       // no, so just use the first point
-      mpts.push(this.pts.front());
+      mpts.push(this.pts[0]);
     }
     // now iterate over the rest of the points
     for (var i=1; i<N; ++i) {
-      if (mpts.back().dist(this.pts[i]) < args.min_dist) { // merge the two points?
-        mpts[mpts.length-1] = mpts.back().add(this.pts[i]).scale(0.5); // yes
+      if (mpts[mpts.length-1].dist(this.pts[i]) < args.min_dist) { // merge the two points?
+        mpts[mpts.length-1] = mpts[mpts.length-1].add(this.pts[i]).scale(0.5); // yes
         changed = true;
       } else
         mpts.push(this.pts[i]); // no
@@ -323,7 +323,7 @@ Polygon.prototype.remove_superfical_vertices = function(args) {
         else error = this.pts[i].dist(C);
       }
       if (error <= args.max_error) {
-        this.pts = this.pts.remove(i);
+        Array.remove(this.pts, i);
         N -= 1;
         changed = true;
       }
