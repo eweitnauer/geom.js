@@ -20,7 +20,7 @@ the spatial membership (see I. Bloch's paper). If type is one of 'above', 'below
 'right', 'left', 'near' or 'far', they can be ommited and default function will be
 used. Internally, the html canvas element is used for calculating the body matrix for
 a given shape.*/
-var SpatialRelationsAnalyzer = function(resolution, scale, type, f_beta, f_member) {
+var SpatialRelationAnalyzer = function(resolution, scale, type, f_beta, f_member) {
   var core = {};
   var res = core.res = resolution;
   core.scale = scale;
