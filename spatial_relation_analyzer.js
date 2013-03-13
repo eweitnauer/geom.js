@@ -51,7 +51,9 @@ var SpatialRelationAnalyzer = function(resolution, scale, type, f_beta, f_member
   }
 
   function dir_membership(val) {
-    return Math.max(0, 1-2*val/Math.PI);
+    //return Math.max(0, 1-2*val/Math.PI);
+    var a = 2*Math.abs(val)/Math.PI-1;
+    return Math.max(0, -a*a*a);
   }
 
   function dist_euklid(dx, dy) {
@@ -79,11 +81,16 @@ var SpatialRelationAnalyzer = function(resolution, scale, type, f_beta, f_member
 
   /// Returns the [min, avg, max] membership values for the given spatial relationship
   /// type. Calculates body_matrix of A and spatial landscape of R if neccessary.
-  core.getMembership = function(A_shape, R_shape) {
-    return calcObjectMembership(getSpatialMembershipMap(R_shape)
+  core.getMembership = function(A_shape, R_shape, debug_draw) {
+    var val = calcObjectMembership(getSpatialMembershipMap(R_shape)
                                ,getBodyMatrix(A_shape)
                                ,scale*(A_shape.x - R_shape.x)
                                ,scale*(A_shape.y - R_shape.y));
+    if (debug_draw) core.debug_draw_A_R(getBodyMatrix(A_shape)
+                                       ,getSpatialMembershipMap(R_shape)
+                                       ,scale*(A_shape.x - R_shape.x)
+                                       ,scale*(A_shape.y - R_shape.y));
+    return val;
   }
 
   /// Checks whether a <= x <= b.
@@ -132,6 +139,7 @@ var SpatialRelationAnalyzer = function(resolution, scale, type, f_beta, f_member
 
     ctx.translate(w/2, h/2);
     ctx.scale(scale, scale);
+    if (shape.rot != 0) ctx.rotate(shape.rot);
     ctx.translate(-shape.x || 0, -shape.y || 0); // center it
     shape.renderOnCanvas(ctx, false, true);
 
