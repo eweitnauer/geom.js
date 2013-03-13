@@ -46,11 +46,68 @@ Matrix.prototype.Set = function(y,x,val) {
   return this;
 }
 
-/// Returns the results of the vector multiplication with v as a new Vector instance.
-Matrix.prototype.mul = function(v) {
-  if (this.N != v.length) throw "dimensions do not match, Matrix-Vector multiplication not possible"
-  var res = new Vector();
-  for (var i=0; i<this.M; i++) res.push(this[i].mul(v));
-  return res;
+/// Returns the result of multiplying itself with the passed argument as
+/// either a new Vector or Matrix, depending on whether a Vector or Matrix was
+/// passed as argument.
+Matrix.prototype.mul = function(arg) {
+  if (arg instanceof Vector) {
+    if (this.N != arg.length) throw "dimension mismatch";
+    var res = new Vector();
+    for (var i=0; i<this.M; i++) res.push(this[i].mul(arg));
+    return res;
+  } else if (arg instanceof Matrix) {
+    if (this.N != arg.M) throw "dimension mismatch";
+    var res = Matrix.construct(this.M, arg.N);
+    for (var i = 0; i<res.M; i++) for (var j=0; j<res.N; j++) {
+      for (var k=0; k<this.N; k++) res[i][j]+=this[i][k]*arg[k][j];
+    }
+    return res;
+  } else throw "type mismatch";
 }
 
+/// Subtracts the passed matrix element-wise from this and returns this.
+Matrix.prototype.Sub = function(M) {
+  if (M.N != this.N || M.M != this.M) throw "dimension mismatch";
+  for (var i=0; i<this.M; i++) this[i].Sub(M[i]);
+  return this;
+}
+
+/// Returns a new matrix that is the result of subtracting M element-wise from this.
+Matrix.prototype.sub = function(M) {
+  if (M.N != this.N || M.M != this.M) throw "dimension mismatch";
+  var R = new Matrix();
+  for (var i=0; i<this.M; i++) R.push(this[i].sub(M[i]));
+  R.M = M.M; R.N = M.N;
+  return R;
+}
+
+/// Adds the passed matrix element-wise from this and returns this.
+Matrix.prototype.Add = function(M) {
+  if (M.N != this.N || M.M != this.M) throw "dimension mismatch";
+  for (var i=0; i<this.M; i++) this[i].Sub(M[i]);
+  return this;
+}
+
+/// Returns a new matrix that is the result of adding M element-wise from this.
+Matrix.prototype.add = function(M) {
+  if (M.N != this.N || M.M != this.M) throw "dimension mismatch";
+  var R = new Matrix();
+  for (var i=0; i<this.M; i++) R.push(this[i].add(M[i]));
+  R.M = M.M; R.N = M.N;
+  return R;
+}
+
+
+/// Returns the maximum value in the matrix.
+Matrix.prototype.max = function() {
+  var m = -Infinity;
+  for (var i=0; i<this.M; i++) m = Math.max(m, this[i].max());
+  return m;
+}
+
+/// Returns the minimum value in the matrix.
+Matrix.prototype.min = function() {
+  var m = Infinity;
+  for (var i=0; i<this.M; i++) m = Math.min(m, this[i].min());
+  return m;
+}
