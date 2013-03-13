@@ -46,6 +46,14 @@ exports['order_vertices'] = function(test) {
   test.done();
 }
 
+exports['bounding_box'] = function(test) {
+  var p = new Polygon([[0,0],[-1,1],[1,1]]);
+  var q = new Polygon([[0,0]]);
+  test.deepEqual({x:-1, y:0, width:2, height:1}, p.bounding_box());
+  test.deepEqual({x:0, y:0, width:0, height:0}, q.bounding_box());
+  test.done();
+}
+
 exports['get_edge_lengths'] = function(test) {
   var p = new Polygon();
   p.add_points([[0,0],[4,0],[4,3]]);

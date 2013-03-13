@@ -53,6 +53,19 @@ Polygon.prototype.order_vertices = function() {
   if (this.area()<0) this.pts.reverse();
 }
 
+/// Returns the bounding box as [x, y, width, height].
+Polygon.prototype.bounding_box = function() {
+  var minx = this.pts[0].x, maxx = minx
+     ,miny = this.pts[0].y, maxy = miny;
+  for (var i = 1; i < this.pts.length; i++) {
+    minx = Math.min(minx, this.pts[i].x);
+    maxx = Math.max(maxx, this.pts[i].x);
+    miny = Math.min(miny, this.pts[i].y);
+    maxy = Math.max(maxy, this.pts[i].y);
+  };
+  return {x:minx, y:miny, width:maxx-minx, height:maxy-miny};
+}
+
 /// Returns the area of the polygon.
 /** The Surveyor's formular is used for the calculation. The area will be
  * negative if the vertices are in clockwise order and positive if the
@@ -545,14 +558,15 @@ Polygon.prototype.sampleBezier2 = function(a, b, c) {
                            new Point((2*b.x+c.x)/3, (2*b.y+c.y)/3), c);
 }
 
-/// Draws itself onto an svg image.
+/// Draws itself onto an svg image. Will consider this.x and this.y if set.
 Polygon.prototype.renderInSvg = function(doc, parent_node, vertex_element) {
   if (arguments.length<3) var vertex_element = false;
   var poly;
   if (this.closed) poly = doc.createElementNS('http://www.w3.org/2000/svg','polygon');
   else poly = doc.createElementNS('http://www.w3.org/2000/svg','polyline');
+  var dx=this.x||0, dy=this.y||0;
   var points = [];
-  for (var i=0; i<this.pts.length; ++i) points.push(this.pts[i].x + ',' + this.pts[i].y);
+  for (var i=0; i<this.pts.length; ++i) points.push((this.pts[i].x+dx) + ',' + (this.pts[i].y+dy));
   poly.setAttribute('points', points.join(' '));
   poly.style.setProperty('stroke', 'red');
   poly.style.setProperty('stroke-width', '.5px');
@@ -560,11 +574,22 @@ Polygon.prototype.renderInSvg = function(doc, parent_node, vertex_element) {
   parent_node.appendChild(poly);
   if (vertex_element) for (var i=0; i<this.pts.length; ++i) {
     var ve = vertex_element.cloneNode(true);
-    ve.setAttribute('cx', this.pts[i].x);
-    ve.setAttribute('cy', this.pts[i].y);
+    ve.setAttribute('cx', this.pts[i].x+dx);
+    ve.setAttribute('cy', this.pts[i].y+dy);
     parent_node.appendChild(ve);
   }
   return poly;
+}
+
+/// Draws itself onto a canvas. Will consider this.x and this.y if set.
+Polygon.prototype.renderOnCanvas = function(ctx, do_stroke, do_fill) {
+  var dx=this.x||0, dy=this.y||0;
+  ctx.beginPath();
+  ctx.moveTo(this.pts[0].x + dx, this.pts[0].y + dy);
+  for (var i=1; i<this.pts.length; i++) ctx.lineTo(this.pts[i].x + dx, this.pts[i].y + dy);
+  if (this.closed) ctx.closePath();
+  if (do_stroke) ctx.stroke();
+  if (do_fill) ctx.fill();
 }
 
 if (typeof(exports) != 'undefined') { exports.Polygon = Polygon }
