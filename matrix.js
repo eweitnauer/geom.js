@@ -105,6 +105,23 @@ Matrix.prototype.max = function() {
   return m;
 }
 
+/// Constructs a new matrix of the same dimensions like this and other and the
+/// values set to the result of the function f_op(this[i][j], other[i][j]) for each element.
+Matrix.prototype.combine = function(other, f_op) {
+  if (other.N != this.N || other.M != this.M) throw "dimension mismatch";
+  var R = Matrix.construct(this.M, this.N);
+  for (var i = 0; i<R.M; i++) for (var j=0; j<R.N; j++) R[i][j] = f_op(this[i][j], other[i][j]);
+  return R;
+}
+
+/// Constructs a new matrix of the same dimensions like this and the
+/// values set to the result of the function f(this[i][j]) for each element.
+Matrix.prototype.map = function(f) {
+  var R = Matrix.construct(this.M, this.N);
+  for (var i = 0; i<R.M; i++) for (var j=0; j<R.N; j++) R[i][j] = f(this[i][j]);
+  return R;
+}
+
 /// Returns the minimum value in the matrix.
 Matrix.prototype.min = function() {
   var m = Infinity;
