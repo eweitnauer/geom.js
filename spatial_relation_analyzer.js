@@ -178,6 +178,37 @@ var SpatialRelationAnalyzer = function(resolution, scale, type, f_beta, f_member
     return M;
   }
 
+  var calcSpatialMembershipMapAccurate = core.calcSpatialMembershipMapAccurate =
+  function(R, f_rel, f_mem) {
+    //var t_start = Date.now();
+
+    var N = R.N, M = R.M;
+    var x0=0, y0=0, x1=R.N-1, y1=R.M-1;
+    if (R.bounding_box) {
+      var bb = R.bounding_box;
+      x0 = bb.x0; x1 = bb.x1; y0 = bb.y0; y1 = bb.y1;
+    }
+    var O = Matrix.construct(M, N, Infinity);
+
+    // iterate over whole image space
+    for (var si=0;si<M;si++) for (var sj=0;sj<N;sj++) {
+      // is this a point in the reference object?
+      if (R[si][sj] == 1) O[si][sj] = NaN;
+      else {
+        // iterate over reference object
+        for (var i=y0;i<=y1;i++) for (var j=x0;j<=x1;j++) {
+          if (R[i][j] != 1) continue;
+          O[si][sj] = Math.min(O[si][sj], f_rel(sj-j, si-i));
+        }
+      }
+    }
+
+    // apply membership function
+    O = O.map(f_mem);
+    //console.log('accurate: ' + (Date.now()-t_start) + ' ms.');
+    return O;
+  }
+
   /// Calculates and returns the spatial membership map for the passed body matrix.
   /// Implementation like in the paper, with 8-neighbourhood and 2 full passes.
   var calcSpatialMembershipMapFast = core.calcSpatialMembershipMapFast =
@@ -185,7 +216,7 @@ var SpatialRelationAnalyzer = function(resolution, scale, type, f_beta, f_member
     //var t_start = Date.now();
     var N = R.N, M = R.M;
     // we will store points with best direction in 'O' first
-    var O = Matrix.construct(M, N, null);
+    var O = Matrix.construct(M, N);
     // initialize
     for (var i=0;i<M;i++) for (var j=0;j<N;j++) {
       // is this a point in the reference object?
