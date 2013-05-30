@@ -26,6 +26,18 @@ exports['Point'] = function(test) {
   test.done();
 }
 
+exports['norm_angle'] = function(test) {
+  test.fequal(Point.norm_angle(-122*Math.PI+1), 1);
+  test.fequal(Point.norm_angle(-2*Math.PI), 0);
+  test.fequal(Point.norm_angle(-Math.PI+0.01), -Math.PI+0.01);
+  test.fequal(Point.norm_angle(0), 0);
+  test.fequal(Point.norm_angle(Math.PI-0.01), Math.PI-0.01);
+  test.fequal(Point.norm_angle(2*Math.PI), 0);
+  test.fequal(Point.norm_angle(122*Math.PI+1), 1);
+
+  test.done();
+}
+
 exports['equals'] = function(test) {
   var a = new Point(-1,-2);
 

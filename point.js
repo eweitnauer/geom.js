@@ -11,6 +11,15 @@ Point = function(p_or_x, y) {
   else { this.x = p_or_x; this.y = y }
 }
 
+/// By adding multiplies of 2*PI, the argument is transformed into the interval
+/// [-PI,PI] and returned.
+Point.norm_angle = function(a) {
+  a = a % (Math.PI*2);
+  if (a < -Math.PI) a += Math.PI*2;
+  else if (a > Math.PI) a -= Math.PI*2;
+  return a;
+}
+
 /// Returns a new point which is this rotated about (0, 0) by angle.
 Point.prototype.rotate = function(angle) {
   return new Point(this.x*Math.cos(angle) - this.y*Math.sin(angle),
