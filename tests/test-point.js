@@ -215,6 +215,11 @@ exports['get_closest_point_on_segment'] = function(test) {
   test.fequal(C.x, 0.2);
   test.fequal(C.y, 0);
 
+  A = new Point(1,0); B = new Point(1,0); P = new Point(0,0);
+  C = Point.get_closest_point_on_segment(A, B, P);
+  test.equal(C.x, 1);
+  test.equal(C.y, 0);
+
   test.done();
 }
 

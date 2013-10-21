@@ -150,14 +150,15 @@ Point.prototype.copy = function() {
 /// To points closer than EPS are considered equal in several algorithms below.
 Point.EPS = 1e-6;
 
-
 /// Returns the closest point on a line segment to a given point.
 Point.get_closest_point_on_segment = function(A, B, P) {
-  var AB = B.sub(A), ABn = AB.normalize();
-  var k = ABn.mul(P.sub(A));
+  var AB = B.sub(A)
+     ,len = AB.len();
+  if (len < Point.EPS) return A;
+  var k = AB.mul(P.sub(A))/len;
   if (k<0) return A;
   if (k>AB.len()) return B;
-  return A.add(ABn.scale(k));
+  return A.add(AB.scale(k/len));
 }
 
 /// Calculates the intersection point between a ray and a line segment.
