@@ -7,10 +7,10 @@ test:
 
 .INTERMEDIATE geom.js: \
 	src/circle.js \
-	src/convex_decomposition.js \
 	src/matrix.js \
 	src/point.js \
 	src/polygon.js \
+	src/convex_decomposition.js \
 	src/spatial_relation_analyzer.js \
 	src/vector.js \
 	src/sparse_vector.js \
