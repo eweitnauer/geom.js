@@ -2,9 +2,9 @@
 
 /// testing with nodeunit
 var assert = require('nodeunit').assert;
-var Polygon = require('../polygon.js').Polygon,
-    Point   = require('../point.js').Point;
-require('../convex_decomposition.js');
+var Polygon = require('../src/polygon.js').Polygon,
+    Point   = require('../src/point.js').Point;
+require('../src/convex_decomposition.js');
 
 assert.fequal = function(a, b, msg) {
   assert.ok(a < b+1e-6);

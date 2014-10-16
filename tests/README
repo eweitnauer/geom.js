@@ -1,11 +1,5 @@
-Here are various tests for the point and polygon classes...
+To run the tests, run `make test` or `npm test` in the base directory. You
+might need to run `npm install` in the base directory before that, once.
 
-To run the automatic unit tests, you need to have node.js installed as well as
-the node module nodeunit. The easiest way to install nodeunit is to use the
-node package manager 'npm'. Just type
-  npm install nodeunit
-in the tests/ directory. To run the unit tests, call
-  ./run
-  
 For a visualization of how bezier curves of svg polygons are interpolated by
 straight line segments, open visual-path-test.html in a browser.

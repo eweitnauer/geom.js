@@ -3,13 +3,13 @@
   <head>
     <title>Parse SVG Test</title>
     <meta charset="utf-8" />
-    <script src="../point.js"></script>
-    <script src="../polygon.js"></script>
+    <script src="../src/point.js"></script>
+    <script src="../src/polygon.js"></script>
     <script src="visual-path-test.js"></script>
   </head>
   <body onload="init();">
     <svg id="svg_element" width=500 height=500 style="border: 1px solid black; margin: 2px"></svg><br/>
-    <p>    
+    <p>
       <span>Max. interpolation error: </span>
       <input type="range" min="0" max="200" value="0" step="10" onchange="errorValue(this.value)" />
       <span id="error_value">0.1</span>
