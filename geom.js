@@ -27,11 +27,20 @@ Circle.prototype.bounding_box = function() {
   return {x:this.x-this.r, y:this.y-this.r, width:2*this.r, height:2*this.r};
 }
 
-// If the passed path SVG element was originally a circle and written as a path
-// by inkscape, it will construct a new Circle object from it and return it. If
-// the path does not resemble a circle, it will return null.
-// If exclude_ellipse is passed as true, the program will reject cases in which
-// rx differs from ry (default: true).
+/// Create a circle based on an svg circle node.
+Circle.fromSVGCircle = function(node) {
+  var attrs = node.attributes;
+  if (attrs.cx && attrs.cy && attrs.r) {
+    return new Circle(Number(attrs.cx.value), Number(attrs.cy.value)
+                     ,Number(attrs.r.value));
+  } else return null;
+}
+
+/// This method is used to parse circles in SVG created with older Inkscape
+/// versions. The circle will be written as path, but the center and radius
+/// is still available in sodipodi:cx, sodipodi:cy, sodipodi:rx and sodipodi:ry.
+/// If exclude_ellipse is passed as true, the program will reject cases in which
+/// rx differs from ry (default: true).
 Circle.fromSVGPath = function(path_node) {
   if (typeof(exclude_ellipse) == 'undefined') exclude_ellipse = true;
   var ns = path_node.lookupNamespaceURI('sodipodi');

@@ -1,7 +1,7 @@
 {
   "name": "geom.js",
   "description": "A javascript library for working with points, polygons, vectors and matrices.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "keywords": [
     "geometry",
     "linear algebra"
