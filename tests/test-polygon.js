@@ -237,6 +237,16 @@ exports['split_at'] = function(test) {
 }
 
 exports['centroid'] = function(test) {
+  p = new Polygon([[99.8013763532903,94.32997884902889]
+                  ,[66.43219694485106,92.87142169230287]
+                  ,[39.76665383370712,94.35656728947744]
+                  ,[0,92.90085]]);
+  p.closed = false;
+  var c = p.centroid();
+  var bb = p.bounding_box();
+  test.fequal(c.x, bb.x + bb.width/2);
+  test.fequal(c.y, bb.y + bb.height/2);
+
   p = new Polygon([[1,2]]);
   var c = p.centroid();
   test.fequal(c.x, 1);
