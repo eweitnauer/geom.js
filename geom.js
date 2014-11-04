@@ -525,24 +525,24 @@ Polygon.prototype.area = function() {
 }
 
 /// Returns the centroid (center of gravity).
-/** This method only works accurately, if the polygon has a non-zero area.
-  * If the area is zero, it returns simply the average of all vertices,
-  * which is only correct for polygons with one or two vertices. */
+/** This method only works accurately, if the polygon has a non-zero area and
+  * has no intersections. If the area is zero or the polygon is not closed,
+  * it simply returns the center of the bounding box. */
 Polygon.prototype.centroid = function() {
   var c = new Point(0,0);
   var N = this.pts.length;
-  if (N==0) return c;
+  if (N===0) return c;
   var A = this.area();
-  if (Math.abs(A) >= Point.EPS) { // area not zero, use accurate formular
+  if (this.closed && Math.abs(A) >= Point.EPS) { // area not zero, use accurate formular
     var prev = this.back();
     for (var i=0; i<N; ++i) {
       c = c.add(prev.add(this.pts[i]).scale(prev.cross(this.pts[i])));
       prev = this.pts[i];
     }
-    c = c.scale(1./(6.*A));
-  } else { // area is zero, just return average of all vertices
-    for (var i=0; i<N; ++i) c = c.add(this.pts[i]);
-    c = c.scale(1./N);
+    c = c.scale(1.0/(6.0*A));
+  } else { // area is zero, or polygon is not closed
+    var bb = this.bounding_box();
+    return new Point(bb.x+bb.width/2, bb.y+bb.height/2);
   }
   return c;
 }
