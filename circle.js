@@ -35,7 +35,11 @@ Circle.prototype.bounding_box = function() {
 Circle.fromSVGPath = function(path_node) {
   if (typeof(exclude_ellipse) == 'undefined') exclude_ellipse = true;
   var ns = path_node.lookupNamespaceURI('sodipodi');
-  var get_attr = function(attr) { return path_node.getAttributeNS(ns, attr) };
+  var get_attr = function(attr) {
+    var res = path_node.getAttributeNS(ns, attr);
+    if (res !== null) return res;
+    return path_node.getAttribute('sodipodi:'+attr);
+  };
   var cx, cy, rx, ry;
   if (get_attr('type') == 'arc' && (cx = get_attr('cx')) && (cy = get_attr('cy')) &&
       (rx = get_attr('rx')) && (ry = get_attr('ry')))
