@@ -8,8 +8,6 @@ Approach", IEEE Transactions on Pattern Analysis and Machine Intelligence,
 pp. 657-664, July, 1999.
 
 Copyright 2011-2013 Erik Weitnauer (eweitnauer@gmail.com)
-You may use this code for any purpose, just include this copyright notice. The
-code is distributed without any warranty.
 *******************************************************************************/
 
 /** Resolution is in the width and height of the lookup table used for calculating

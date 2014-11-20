@@ -2,7 +2,7 @@
 
 /// testing with nodeunit
 var assert = require('nodeunit').assert;
-var Vector = require('../vector.js').Vector;
+var Vector = require('../src/vector.js').Vector;
 
 assert.fequal = function(a, b, msg) {
   assert.ok(a < b+1e-6);

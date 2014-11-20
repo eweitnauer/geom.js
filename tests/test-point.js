@@ -2,7 +2,7 @@
 
 /// testing with nodeunit
 var assert = require('nodeunit').assert;
-var Point   = require('../point.js').Point;
+var Point   = require('../src/point.js').Point;
 
 assert.fequal = function(a, b, msg) {
   assert.ok(a < b+1e-6);
