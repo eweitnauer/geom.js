@@ -53,12 +53,12 @@ Circle.fromSVGPath = function(path_node) {
   if (get_attr('type') == 'arc' && (cx = get_attr('cx')) && (cy = get_attr('cy')) &&
       (rx = get_attr('rx')) && (ry = get_attr('ry')))
   {
-    // check whether this is a full circle (|start-end| = 2*PI)
+    // check whether this is a full circle (|end-start| = 2*PI or end == start-eps)
     var start = get_attr('start'), end = get_attr('end');
     if (start && end) {
-      var diff = Math.abs(Number(start)-Number(end));
-      diff = Math.abs(diff - 2*Math.PI);
-      if (diff > 0.01) {
+      var diff = Number(end)-Number(start);
+      if ( Math.abs(Math.abs(diff) - 2*Math.PI) > 0.01
+        && !(diff < 0 && diff > -0.01)) {
         console.log("Warning: this is a circle segment! ||start-end|-2*PI| =", diff);
         return null;
       }
