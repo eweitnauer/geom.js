@@ -44,17 +44,21 @@ Circle.fromSVGCircle = function(node) {
 Circle.fromSVGPath = function(path_node) {
   if (typeof(exclude_ellipse) == 'undefined') exclude_ellipse = true;
   var ns = path_node.lookupNamespaceURI('sodipodi');
-  var get_attr = function(attr) { return path_node.getAttributeNS(ns, attr) };
+  var get_attr = function(attr) {
+    var res = path_node.getAttributeNS(ns, attr);
+    if (res !== null) return res;
+    return path_node.getAttribute('sodipodi:'+attr);
+  };
   var cx, cy, rx, ry;
   if (get_attr('type') == 'arc' && (cx = get_attr('cx')) && (cy = get_attr('cy')) &&
       (rx = get_attr('rx')) && (ry = get_attr('ry')))
   {
-    // check whether this is a full circle (|start-end| = 2*PI)
+    // check whether this is a full circle (|end-start| = 2*PI or end == start-eps)
     var start = get_attr('start'), end = get_attr('end');
     if (start && end) {
-      var diff = Math.abs(Number(start)-Number(end));
-      diff = Math.abs(diff - 2*Math.PI);
-      if (diff > 0.01) {
+      var diff = Number(end)-Number(start);
+      if ( Math.abs(Math.abs(diff) - 2*Math.PI) > 0.01
+        && !(diff < 0 && diff > -0.01)) {
         console.log("Warning: this is a circle segment! ||start-end|-2*PI| =", diff);
         return null;
       }
@@ -1659,7 +1663,8 @@ SpatialRelationAnalyzer.disjunction = function(A, B) {
 
 SpatialRelationAnalyzer.subtract = function(A, B) {
   return A.combine(B, function(a,b) { return Math.max(0, a-b) });
-}/// Copyright by Erik Weitnauer, 2012.
+}
+/// Copyright by Erik Weitnauer, 2012.
 
 /** Vector is a subclass of array. I use the Prototype chain injection method described in
 http://perfectionkills.com/how-ecmascript-5-still-does-not-allow-to-subclass-an-array/ for it. */
