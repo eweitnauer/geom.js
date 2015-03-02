@@ -1,5 +1,3 @@
-/// Copyright by Erik Weitnauer, 2012.
-
 Circle = function(cx, cy, r) {
   this.x = cx;
   this.y = cy;
@@ -25,6 +23,34 @@ Circle.prototype.move_to_origin = function() {
 /// Returns the bounding box as [x, y, width, height].
 Circle.prototype.bounding_box = function() {
   return {x:this.x-this.r, y:this.y-this.r, width:2*this.r, height:2*this.r};
+}
+
+/// Returns an array of zero, one or two intersections of a ray starting in
+/// point P with vector v with this circle. The closer intersection is first
+/// in the array.
+Circle.prototype.intersect_with_ray = function(P, v) {
+/// For circle at (0,0): (R_x+k*v_x)^2 + (R_y+k*v_y)^2 = r^2
+/// ==> (v_x^2+v_y^2)*k^2 + 2(R_x*v_x+R_y*v_y)*k + (R_x^2+R_y^2-r^2) = 0
+/// ==> k = (-b +- sqrt(b^2-4ac)) / 2a
+  var p = P.sub(this)
+    , a = v.x*v.x + v.y*v.y
+    , b = 2*p.x*v.x + 2*p.y*v.y
+    , c = p.x*p.x + p.y*p.y - this.r*this.r
+    , d = b*b-4*a*c;
+
+  if (d<0) return [];
+  if (d<Point.EPS) {
+    var k = -b/(2*a);
+    if (k < 0) return [];
+    return [(new Point(P)).add(v.scale(k))];
+  }
+  var res = []
+    , k1 = (-b-Math.sqrt(d))/(2*a)
+    , k2 = (-b+Math.sqrt(d))/(2*a);
+  if (k1 > k2) { var h = k1; k1 = k2; k2 = h; }
+  if (k1 >= 0) res.push((new Point(P)).add(v.scale(k1)));
+  if (k2 >= 0) res.push((new Point(P)).add(v.scale(k2)));
+  return res;
 }
 
 /// Create a circle based on an svg circle node.

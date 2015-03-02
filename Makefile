@@ -1,4 +1,5 @@
 JS_COMPILER = ./node_modules/.bin/uglifyjs
+VERSION = v1.0.3
 
 all: geom.min.js
 
@@ -18,12 +19,13 @@ test:
 
 geom.min.js: geom.js Makefile
 	@rm -f $@
-	$(JS_COMPILER) -m --preamble '// Copyright Erik Weitnauer 2014.' < $< > $@
+	$(JS_COMPILER) -m --preamble '// Copyright Erik Weitnauer 2015. [$(VERSION)]' < $< > $@
 	@chmod a-w $@
 
 geom.js: Makefile
 	@rm -f $@
-	cat $(filter %.js,$^) > $@
+	@echo '// Copyright Erik Weitnauer 2015. [$(VERSION)]' > $@
+	cat $(filter %.js,$^) >> $@
 	@chmod a-w $@
 
 clean:

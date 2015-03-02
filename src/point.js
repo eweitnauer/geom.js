@@ -126,6 +126,11 @@ Point.prototype.Normalize = function() {
   return this;
 }
 
+// Returns a vector that is perpendicular to this. Returns (0,0) for (0,0).
+Point.prototype.get_perpendicular = function() {
+  return new Point(-this.y, this.x);
+}
+
 /// Returns a scaled version of this vector as a new vector.
 Point.prototype.scale = function(s) {
   return new Point(this.x*s, this.y*s);
@@ -216,6 +221,66 @@ Point.intersect_ray_with_segment = function(R, v, A, B, intersection, margin) {
   // direction check
   if (intersection.sub(R).mul(v) >= 0.) return true;
   else return false;
+}
+
+
+/// Calculates the intersection between a ray that starts within a rectangle
+/// with rounded corners with that rectangle, as well as the tangent at that
+/// point.
+/** The ray is passed as origin and direction vector, the rectangle as an
+ * object {x, y, width, height, r}, where r is the radius of the round corners.
+ * as its two end points A and B. The method returns an object { point, tangent }
+ * if an intersection was found and null otherwise.
+ *
+ * If there is more than one intersection point, the first intersection point
+ * is returned.
+ *
+ * Params:
+ *   R: start of ray (Point)
+ *   v: direction vector of ray (Point)
+ *   rect: { x, y, width, height, r } (a rounded rectangle)
+ * Returns:
+ *   { point, tangent } or null
+ */
+Point.intersect_inner_ray_with_rect = function(R, v, rect) {
+  var ul = new Point(rect.x, rect.y)
+    , ur = new Point(rect.x+rect.width, rect.y)
+    , ll = new Point(rect.x, rect.y+rect.height)
+    , lr = new Point(rect.x+rect.width, rect.y+rect.height)
+    , r = rect.r;
+
+  var point = new Point(), side, tangent;
+
+  if (Point.intersect_ray_with_segment(R, v, ul, ll, point)) {
+    tangent = new Point(0,1);
+  } else if (Point.intersect_ray_with_segment(R, v, ur, lr, point)) {
+    tangent = new Point(0,-1);
+  } else if (Point.intersect_ray_with_segment(R, v, ul, ur, point)) {
+    tangent = new Point(-1,0);
+  } else if (Point.intersect_ray_with_segment(R, v, ll, lr, point)) {
+    tangent = new Point(1,0);
+  } else return null;
+
+  if (r === 0) return {point: point, tangent: tangent };
+  var pts;
+  if (point.x < ul.x+r && point.y < ul.y+r) {
+    pts = (new Circle(ul.x+r, ul.y+r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(ul.x+r, ul.y+r)).get_perpendicular().scale(-1).Normalize();
+  } else if (point.x > ur.x-r && point.y < ur.y+r) {
+    pts = (new Circle(ur.x-r, ur.y+r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(ur.x-r, ur.y+r)).get_perpendicular().scale(-1).Normalize();
+  } else if (point.x < ll.x+r && point.y > ll.y-r) {
+    pts = (new Circle(ll.x+r, ll.y-r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(ll.x+r, ll.y-r)).get_perpendicular().scale(-1).Normalize();
+  } else if (point.x > lr.x-r && point.y > lr.y-r) {
+    pts = (new Circle(lr.x-r, lr.y-r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(lr.x-r, lr.y-r)).get_perpendicular().scale(-1).Normalize();
+  }
+  return {point: point, tangent: tangent };
 }
 
 /// This line is for the automated tests with node.js

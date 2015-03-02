@@ -3,6 +3,7 @@
 /// testing with nodeunit
 var assert = require('nodeunit').assert;
 var Point   = require('../src/point.js').Point;
+var Circle = require('../src/circle.js').Circle;
 
 assert.fequal = function(a, b, msg) {
   assert.ok(a < b+1e-6);
@@ -269,6 +270,65 @@ exports['intersect_ray_with_segment'] = function(test) {
   R = new Point(0,1); v = new Point(1,0);
   A = new Point(-1,0); B = new Point(1,0);
   test.ok(!Point.intersect_ray_with_segment(R, v, A, B, hit));
+
+  test.done();
+}
+
+exports['get_perpendicular'] = function(test) {
+  var v = new Point(0,0);
+  var p = v.get_perpendicular();
+  test.equal(p.x, 0);
+  test.equal(p.y, 0);
+
+  v = new Point(2,1);
+  p = v.get_perpendicular();
+  test.equal(p.x, -1);
+  test.equal(p.y, 2);
+
+  test.done();
+}
+
+exports['intersect_inner_ray_with_rect'] = function(test) {
+  // normal intersection, no rounded corners
+  var rect = {x: -0.5, y:-1, width: 1, height: 2, r: 0};
+  var R = new Point(0.1,-0.1), v = new Point(-1,0.5);
+  var res = Point.intersect_inner_ray_with_rect(R, v, rect);
+  test.ok(res);
+  test.fequal(res.point.x, -0.5);
+  test.fequal(res.point.y, 0.2);
+  test.fequal(res.tangent.x, 0);
+  test.fequal(Math.abs(res.tangent.y), 1);
+
+  // intersection with corner, no rounded corners
+  rect = {x: -0.5, y:-1, width: 1, height: 2, r: 0};
+  R = new Point(0,0); v = new Point(-0.5,-1);
+  res = Point.intersect_inner_ray_with_rect(R, v, rect);
+  test.ok(res);
+  test.fequal(res.point.x, -0.5);
+  test.fequal(res.point.y, -1);
+
+  // normal intersection, rounded corners
+  var r = 0.5;
+  rect = {x: -0.5, y:-1, width: 1, height: 2, r: r};
+  R = new Point(0,0); v = new Point(0, 1);
+  res = Point.intersect_inner_ray_with_rect(R, v, rect);
+  test.ok(res);
+  test.fequal(res.point.x, 0);
+  test.fequal(res.point.y, 1);
+  test.fequal(res.tangent.x, 1);
+  test.fequal(res.tangent.y, 0);
+
+  // intersection with corner, rounded corners
+  r = 1;
+  rect = { x: -1, y:-1, width: 2, height: 2, r: r };
+  R = new Point(0,0); v = new Point(-0.5,-0.5);
+  res = Point.intersect_inner_ray_with_rect(R, v, rect);
+  console.log(res.point, res.tangent);
+  test.ok(res);
+  test.fequal(res.point.x, -1 * r/Math.sqrt(2));
+  test.fequal(res.point.y, -1 * r/Math.sqrt(2));
+  test.fequal(res.tangent.x, -Math.sqrt(2)/2);
+  test.fequal(res.tangent.y, Math.sqrt(2)/2);
 
   test.done();
 }

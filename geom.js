@@ -1,5 +1,4 @@
-/// Copyright by Erik Weitnauer, 2012.
-
+// Copyright Erik Weitnauer 2015. [v1.0.3]
 Circle = function(cx, cy, r) {
   this.x = cx;
   this.y = cy;
@@ -25,6 +24,34 @@ Circle.prototype.move_to_origin = function() {
 /// Returns the bounding box as [x, y, width, height].
 Circle.prototype.bounding_box = function() {
   return {x:this.x-this.r, y:this.y-this.r, width:2*this.r, height:2*this.r};
+}
+
+/// Returns an array of zero, one or two intersections of a ray starting in
+/// point P with vector v with this circle. The closer intersection is first
+/// in the array.
+Circle.prototype.intersect_with_ray = function(P, v) {
+/// For circle at (0,0): (R_x+k*v_x)^2 + (R_y+k*v_y)^2 = r^2
+/// ==> (v_x^2+v_y^2)*k^2 + 2(R_x*v_x+R_y*v_y)*k + (R_x^2+R_y^2-r^2) = 0
+/// ==> k = (-b +- sqrt(b^2-4ac)) / 2a
+  var p = P.sub(this)
+    , a = v.x*v.x + v.y*v.y
+    , b = 2*p.x*v.x + 2*p.y*v.y
+    , c = p.x*p.x + p.y*p.y - this.r*this.r
+    , d = b*b-4*a*c;
+
+  if (d<0) return [];
+  if (d<Point.EPS) {
+    var k = -b/(2*a);
+    if (k < 0) return [];
+    return [(new Point(P)).add(v.scale(k))];
+  }
+  var res = []
+    , k1 = (-b-Math.sqrt(d))/(2*a)
+    , k2 = (-b+Math.sqrt(d))/(2*a);
+  if (k1 > k2) { var h = k1; k1 = k2; k2 = h; }
+  if (k1 >= 0) res.push((new Point(P)).add(v.scale(k1)));
+  if (k2 >= 0) res.push((new Point(P)).add(v.scale(k2)));
+  return res;
 }
 
 /// Create a circle based on an svg circle node.
@@ -347,6 +374,11 @@ Point.prototype.Normalize = function() {
   return this;
 }
 
+// Returns a vector that is perpendicular to this. Returns (0,0) for (0,0).
+Point.prototype.get_perpendicular = function() {
+  return new Point(-this.y, this.x);
+}
+
 /// Returns a scaled version of this vector as a new vector.
 Point.prototype.scale = function(s) {
   return new Point(this.x*s, this.y*s);
@@ -437,6 +469,66 @@ Point.intersect_ray_with_segment = function(R, v, A, B, intersection, margin) {
   // direction check
   if (intersection.sub(R).mul(v) >= 0.) return true;
   else return false;
+}
+
+
+/// Calculates the intersection between a ray that starts within a rectangle
+/// with rounded corners with that rectangle, as well as the tangent at that
+/// point.
+/** The ray is passed as origin and direction vector, the rectangle as an
+ * object {x, y, width, height, r}, where r is the radius of the round corners.
+ * as its two end points A and B. The method returns an object { point, tangent }
+ * if an intersection was found and null otherwise.
+ *
+ * If there is more than one intersection point, the first intersection point
+ * is returned.
+ *
+ * Params:
+ *   R: start of ray (Point)
+ *   v: direction vector of ray (Point)
+ *   rect: { x, y, width, height, r } (a rounded rectangle)
+ * Returns:
+ *   { point, tangent } or null
+ */
+Point.intersect_inner_ray_with_rect = function(R, v, rect) {
+  var ul = new Point(rect.x, rect.y)
+    , ur = new Point(rect.x+rect.width, rect.y)
+    , ll = new Point(rect.x, rect.y+rect.height)
+    , lr = new Point(rect.x+rect.width, rect.y+rect.height)
+    , r = rect.r;
+
+  var point = new Point(), side, tangent;
+
+  if (Point.intersect_ray_with_segment(R, v, ul, ll, point)) {
+    tangent = new Point(0,1);
+  } else if (Point.intersect_ray_with_segment(R, v, ur, lr, point)) {
+    tangent = new Point(0,-1);
+  } else if (Point.intersect_ray_with_segment(R, v, ul, ur, point)) {
+    tangent = new Point(-1,0);
+  } else if (Point.intersect_ray_with_segment(R, v, ll, lr, point)) {
+    tangent = new Point(1,0);
+  } else return null;
+
+  if (r === 0) return {point: point, tangent: tangent };
+  var pts;
+  if (point.x < ul.x+r && point.y < ul.y+r) {
+    pts = (new Circle(ul.x+r, ul.y+r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(ul.x+r, ul.y+r)).get_perpendicular().scale(-1).Normalize();
+  } else if (point.x > ur.x-r && point.y < ur.y+r) {
+    pts = (new Circle(ur.x-r, ur.y+r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(ur.x-r, ur.y+r)).get_perpendicular().scale(-1).Normalize();
+  } else if (point.x < ll.x+r && point.y > ll.y-r) {
+    pts = (new Circle(ll.x+r, ll.y-r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(ll.x+r, ll.y-r)).get_perpendicular().scale(-1).Normalize();
+  } else if (point.x > lr.x-r && point.y > lr.y-r) {
+    pts = (new Circle(lr.x-r, lr.y-r, r)).intersect_with_ray(R, v);
+    point = pts[1] || pts[0] || point;
+    tangent = point.sub(new Point(lr.x-r, lr.y-r)).get_perpendicular().scale(-1).Normalize();
+  }
+  return {point: point, tangent: tangent };
 }
 
 /// This line is for the automated tests with node.js
@@ -1041,12 +1133,12 @@ if (typeof(exports) != 'undefined') { exports.Polygon = Polygon }
 /// Decomposes the polygon into convex pieces. (Ordered!)
 /** This algorithm works only for polygons that have no holes and no
   * intersections!
-  * 
+  *
   * It recursively splits the polygon until all pieces are convex. They are
   * returned as an array of Polygons. The 'settings' parameter can be used to
   * adjust the behavior of the decomposition algorithm. The depth parameter
   * should be omited or passed as 0.
-  * 
+  *
   * The decomposing algorithm works as follows:
   *   -# Preprocessing of the passed polygon if <tt>settings.preprocess == true</tt>.
   *     - order vertices if  <tt>settings.pre_order == true</tt>
@@ -1081,7 +1173,7 @@ Polygon.prototype.convex_decomposition = function(settings, depth) {
   if (settings.debug_text) {
     console.log("convex_decomposition on depth " + depth + " called for " + this);
   }
-  
+
   if (settings.preprocess && depth==0) {
     if (settings.pre_order_vertices) this.order_vertices();
     if (settings.pre_merge_vertices_min_dist>0)
@@ -1090,11 +1182,11 @@ Polygon.prototype.convex_decomposition = function(settings, depth) {
       this.remove_superfical_vertices({max_error: settings.pre_remove_vertices_max_error});
     if (settings.debug_text) console.log("after preprocessing: " + this);
   }
-  
+
   var pts = this.pts;
   var N = pts.length;
   if (N < 3) return []; // we need at least a triangle
-    
+
   var notch_idx = this.find_notch();
   if (settings.debug_text) console.log("notch_idx is " + notch_idx);
   if (notch_idx < N) { // found a notch at position idx
@@ -1108,7 +1200,7 @@ Polygon.prototype.convex_decomposition = function(settings, depth) {
     // at the connection between B and that vertice. If not we proceed with 2.
     // 2. Find the closest intersection point of AB and CA with the edges of the
     // polygon. Choose the closer one.
-    
+
     var ps = [];
     // first try strategy 1
     ps = this.cd_strategy_1(notch_idx, settings);
@@ -1174,7 +1266,7 @@ Polygon.prototype.cd_strategy_1 = function(notch_idx, settings) {
       split_point = i;
     }
   }
-  
+
   if (split_point < N) {
     if (settings.debug_text) console.log("Strategy1 ==> using vertex " + split_point + " as splitting point.");
     return this.split_at(notch_idx, split_point);
@@ -1186,7 +1278,7 @@ Polygon.prototype.cd_strategy_1 = function(notch_idx, settings) {
 /// with the rest of the polygon.
 Polygon.prototype.cd_strategy_2 = function(notch_idx, settings) {
   if (settings.debug_text) console.log("Applying strategy 2 to notch at " + notch_idx + "...");
-  
+
   var pts = this.pts;
   var N = pts.length;
   var A = pts[(N+notch_idx-1)%N], // vertex before the notch
@@ -1230,7 +1322,7 @@ Polygon.prototype.cd_strategy_2 = function(notch_idx, settings) {
     p2.pts.push(pts[i].copy());
   }
   p2.pts.push(closest_hit.copy());
-  
+
   return [p1,p2];
 }
 
