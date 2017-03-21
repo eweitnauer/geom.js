@@ -377,63 +377,74 @@ Polygon.fromSVGPath = function(path_node, max_error, remove_duplicates) {
 
   // get the path segments, insert their start and end points and depending
   // on their type more points to interpolate curved parts
-  var segs = []
-  var segList = path_node.pathSegList;
-  for (var i=segList.numberOfItems-1; i>=0; --i) segs[i] = segList.getItem(i);
+  var segs = path_node.getPathData({normalize: true}); // only need to support M, L, C, Z
 
   /// iterate over segments
   var ep = new Point(0,0), cp = null; // current end point
   for (var i=0; i<segs.length; ++i) {
     var seg = segs[i];
-    if (seg.pathSegType == SVGPathSeg.PATHSEG_CLOSEPATH) {
+    if (seg.type === 'z' || seg.type === 'Z') {
       poly.closed = true;
       break; // just take the first subpath
     } else {
-      switch (seg.pathSegType) {
-        case SVGPathSeg.PATHSEG_MOVETO_ABS: ep = new Point(seg.x, seg.y); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_MOVETO_REL: ep = ep.add(new Point(seg.x, seg.y)); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_LINETO_ABS: ep = new Point(seg.x, seg.y); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_LINETO_REL: ep = ep.add(new Point(seg.x, seg.y)); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
-          cp = new Point(seg.x2, seg.y2);
-          ep = poly.sampleBezier(ep, new Point(seg.x1, seg.y1), cp, new Point(seg.x, seg.y));
+      switch (seg.type) {
+        case 'M': ep = new Point(seg.values[0], seg.values[1]); cp = ep; poly.push(ep); break;
+        case 'm': ep = ep.add(new Point(seg.values[0], seg.values[1])); cp = ep; poly.push(ep); break;
+        case 'L': ep = new Point(seg.values[0], seg.values[1]); cp = ep; poly.push(ep); break;
+        case 'l': ep = ep.add(new Point(seg.values[0], seg.values[1])); cp = ep; poly.push(ep); break;
+        case 'C':
+          var x1 = seg.values[0], y1 = seg.values[1]
+            , x2 = seg.values[2], y2 = seg.values[3]
+            , x  = seg.values[4], y  = seg.values[5];
+          cp = new Point(x2, y2);
+          ep = poly.sampleBezier(ep, new Point(x1, y1), cp, new Point(x, y));
           break;
-        case SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
-          cp = new Point(seg.x2+ep.x, seg.y2+ep.y);
-          ep = poly.sampleBezier(ep, new Point(seg.x1+ep.x, seg.y1+ep.y),
-            cp, new Point(seg.x+ep.x, seg.y+ep.y));
+        case 'c':
+          var x1 = seg.values[0], y1 = seg.values[1]
+            , x2 = seg.values[2], y2 = seg.values[3]
+            , x  = seg.values[4], y  = seg.values[5];
+          cp = new Point(x2+ep.x, y2+ep.y);
+          ep = poly.sampleBezier(ep, new Point(x1+ep.x, y1+ep.y), cp, new Point(x+ep.x, y+ep.y));
           break;
-        case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
-          cp = new Point(seg.x1, seg.y1);
-          ep = poly.sampleBezier2(ep, cp, new Point(seg.x, seg.y));
+        case 'Q':
+          var x1 = seg.values[0], y1 = seg.values[1]
+            , x  = seg.values[2], y  = seg.values[3];
+          cp = new Point(x1, y1);
+          ep = poly.sampleBezier2(ep, cp, new Point(x, y));
           break;
-        case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
-          cp = new Point(seg.x1+ep.x, seg.y1+ep.y);
-          ep = poly.sampleBezier2(ep, cp, new Point(seg.x+ep.x, seg.y+ep.y));
+        case 'q':
+          var x1 = seg.values[0], y1 = seg.values[1]
+            , x  = seg.values[2], y  = seg.values[3];
+          cp = new Point(x1+ep.x, y1+ep.y);
+          ep = poly.sampleBezier2(ep, cp, new Point(x+ep.x, y+ep.y));
           break;
-        case SVGPathSeg.PATHSEG_ARC_ABS: throw "not implemented!";
-        case SVGPathSeg.PATHSEG_ARC_REL: throw "not implemented!";
-        case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS: ep = new Point(seg.x, ep.y); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL: ep = new Point(seg.x+ep.x, ep.y); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS: ep = new Point(ep.x, seg.y); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL: ep = new Point(ep.x, seg.y+ep.y); cp = ep; poly.push(ep); break;
-        case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
+        case 'A': throw "not implemented!";
+        case 'a': throw "not implemented!";
+        case 'H': ep = new Point(seg.values[0], ep.y); cp = ep; poly.push(ep); break;
+        case 'h': ep = new Point(seg.values[0]+ep.x, ep.y); cp = ep; poly.push(ep); break;
+        case 'V': ep = new Point(ep.x, seg.values[0]); cp = ep; poly.push(ep); break;
+        case 'v': ep = new Point(ep.x, seg.values[0]+ep.y); cp = ep; poly.push(ep); break;
+        case 'S':
+          var x2 = seg.values[0], y2 = seg.values[1]
+            , x  = seg.values[2], y  = seg.values[3];
           var mirror_cp = new Point(2*ep.x-cp.x, 2*ep.y-cp.y);
-          cp = new Point(seg.x2, seg.y2);
-          ep = poly.sampleBezier(ep, mirror_cp, cp, new Point(seg.x, seg.y));
+          cp = new Point(x2, y2);
+          ep = poly.sampleBezier(ep, mirror_cp, cp, new Point(x, y));
           break;
-        case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
+        case 's':
+          var x2 = seg.values[0], y2 = seg.values[1]
+            , x  = seg.values[2], y  = seg.values[3];
           var mirror_cp = new Point(2*ep.x-cp.x, 2*ep.y-cp.y);
-          cp = new Point(seg.x2+ep.x, seg.y2+ep.y);
-          ep = poly.sampleBezier(ep, mirror_cp, cp, new Point(seg.x+ep.x, seg.y+ep.y));
+          cp = new Point(x2+ep.x, y2+ep.y);
+          ep = poly.sampleBezier(ep, mirror_cp, cp, new Point(x+ep.x, y+ep.y));
           break;
-        case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
+        case 'T':
           cp = new Point(2*ep.x-cp.x, 2*ep.y-cp.y);
-          ep = poly.sampleBezier2(ep, cp, new Point(seg.x, seg.y));
+          ep = poly.sampleBezier2(ep, cp, new Point(seg.values[0], seg.values[1]));
           break;
-        case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
+        case 't':
           cp = new Point(2*ep.x-cp.x, 2*ep.y-cp.y);
-          ep = poly.sampleBezier2(ep, cp, new Point(seg.x+ep.x, seg.y+ep.y));
+          ep = poly.sampleBezier2(ep, cp, new Point(seg.values[0]+ep.x, seg.values[1]+ep.y));
           break;
         default: unknown = true; break;
       }
