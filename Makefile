@@ -1,5 +1,5 @@
 JS_COMPILER = ./node_modules/.bin/uglifyjs
-VERSION = v1.0.3
+VERSION = v1.0.4
 
 all: geom.min.js
 
@@ -10,6 +10,7 @@ test:
 	src/circle.js \
 	src/matrix.js \
 	src/point.js \
+	src/path-data-polyfill.js \
 	src/polygon.js \
 	src/convex_decomposition.js \
 	src/spatial_relation_analyzer.js \
@@ -19,12 +20,12 @@ test:
 
 geom.min.js: geom.js Makefile
 	@rm -f $@
-	$(JS_COMPILER) -m --preamble '// Copyright Erik Weitnauer 2015. [$(VERSION)]' < $< > $@
+	$(JS_COMPILER) -m --preamble '// Copyright Erik Weitnauer 2017. [$(VERSION)]' < $< > $@
 	@chmod a-w $@
 
 geom.js: Makefile
 	@rm -f $@
-	@echo '// Copyright Erik Weitnauer 2015. [$(VERSION)]' > $@
+	@echo '// Copyright Erik Weitnauer 2017. [$(VERSION)]' > $@
 	cat $(filter %.js,$^) >> $@
 	@chmod a-w $@
 
