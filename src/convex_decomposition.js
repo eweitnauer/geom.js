@@ -3,12 +3,12 @@
 /// Decomposes the polygon into convex pieces. (Ordered!)
 /** This algorithm works only for polygons that have no holes and no
   * intersections!
-  * 
+  *
   * It recursively splits the polygon until all pieces are convex. They are
   * returned as an array of Polygons. The 'settings' parameter can be used to
   * adjust the behavior of the decomposition algorithm. The depth parameter
   * should be omited or passed as 0.
-  * 
+  *
   * The decomposing algorithm works as follows:
   *   -# Preprocessing of the passed polygon if <tt>settings.preprocess == true</tt>.
   *     - order vertices if  <tt>settings.pre_order == true</tt>
@@ -43,7 +43,7 @@ Polygon.prototype.convex_decomposition = function(settings, depth) {
   if (settings.debug_text) {
     console.log("convex_decomposition on depth " + depth + " called for " + this);
   }
-  
+
   if (settings.preprocess && depth==0) {
     if (settings.pre_order_vertices) this.order_vertices();
     if (settings.pre_merge_vertices_min_dist>0)
@@ -52,11 +52,11 @@ Polygon.prototype.convex_decomposition = function(settings, depth) {
       this.remove_superfical_vertices({max_error: settings.pre_remove_vertices_max_error});
     if (settings.debug_text) console.log("after preprocessing: " + this);
   }
-  
+
   var pts = this.pts;
   var N = pts.length;
   if (N < 3) return []; // we need at least a triangle
-    
+
   var notch_idx = this.find_notch();
   if (settings.debug_text) console.log("notch_idx is " + notch_idx);
   if (notch_idx < N) { // found a notch at position idx
@@ -70,7 +70,7 @@ Polygon.prototype.convex_decomposition = function(settings, depth) {
     // at the connection between B and that vertice. If not we proceed with 2.
     // 2. Find the closest intersection point of AB and CA with the edges of the
     // polygon. Choose the closer one.
-    
+
     var ps = [];
     // first try strategy 1
     ps = this.cd_strategy_1(notch_idx, settings);
@@ -136,7 +136,7 @@ Polygon.prototype.cd_strategy_1 = function(notch_idx, settings) {
       split_point = i;
     }
   }
-  
+
   if (split_point < N) {
     if (settings.debug_text) console.log("Strategy1 ==> using vertex " + split_point + " as splitting point.");
     return this.split_at(notch_idx, split_point);
@@ -148,7 +148,7 @@ Polygon.prototype.cd_strategy_1 = function(notch_idx, settings) {
 /// with the rest of the polygon.
 Polygon.prototype.cd_strategy_2 = function(notch_idx, settings) {
   if (settings.debug_text) console.log("Applying strategy 2 to notch at " + notch_idx + "...");
-  
+
   var pts = this.pts;
   var N = pts.length;
   var A = pts[(N+notch_idx-1)%N], // vertex before the notch
@@ -192,7 +192,7 @@ Polygon.prototype.cd_strategy_2 = function(notch_idx, settings) {
     p2.pts.push(pts[i].copy());
   }
   p2.pts.push(closest_hit.copy());
-  
+
   return [p1,p2];
 }
 
