@@ -283,7 +283,7 @@ Point.intersect_inner_ray_with_rect = function(R, v, rect) {
   return {point: point, tangent: tangent };
 }
 
-/** Checks to see if one of the vertices in a polygon is inside a rectangle
+/** Checks if the point is inside the rectangle.
 * Params:
 *     ul: a point that is the upper left of the rectangle
 *     lr: a point that is the lower left of the rectangle
@@ -291,7 +291,6 @@ Point.intersect_inner_ray_with_rect = function(R, v, rect) {
 *     a boolean indicating whether or not the point is inside the rectangle
 */
 Point.prototype.is_inside_rect = function(ul, lr) {
-
   return ul.x <= this.x && this.x <= lr.x && ul.y >= this.y && this.y >= lr.y;
 }
 
@@ -301,10 +300,10 @@ Point.prototype.is_inside_rect = function(ul, lr) {
 *     b: Point 2 of line segment
 *     ul: a point that is the upper left of the rectangle
 *     lr: a point that is the lower left of the rectangle
-* Returns: 
+* Returns:
 *     a boolean indicating whether or not the line segment intersects with any of the sides of the rectangle.
 */
-Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
+Point.intersect_seg_with_rect = function(a, b, ul, lr) {
   var upperLeft = new Point(ul.x, ul.y);
   var upperRight = new Point(lr.x, ul.y);
   var lowerLeft = new Point(ul.x, lr.y);
@@ -320,7 +319,7 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
       if(j > rect.length - 1){
         j = 0;
       }
-      if(a.intersect_segments(a, b, rect[i], rect[j])){
+      if(Point.intersect_segments(a, b, rect[i], rect[j])){
         return true;
       }
 
@@ -337,10 +336,10 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
 *     b: Point 2 of first line segment
 *     c: Point 1 of second line segment
 *     d: Point 2 of second line segment
-* Returns: 
+* Returns:
 *     a boolean indicating whether or not the line segment intersects with the second line segment
 */
-Point.prototype.intersect_segments = function(a, b, c, d){
+Point.intersect_segments = function(a, b, c, d) {
   // Check for same line
   if(a.x == c.x && a.y == c.y && b.x == d.x && b.y == d.y){
     return true;
@@ -357,11 +356,11 @@ Point.prototype.intersect_segments = function(a, b, c, d){
     if(test1 >= 0 && test1 <= 1 && test2 >= 0 && test2 <= 1){
       return true;
     }
-    
+
     return false;
-  
+
 }
 
 
 /// This line is for the automated tests with node.js
-if (typeof(exports) != 'undefined') { exports.Point = Point }  
+if (typeof(exports) != 'undefined') { exports.Point = Point }
