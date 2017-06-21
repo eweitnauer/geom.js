@@ -304,7 +304,7 @@ Point.prototype.is_inside_rect = function(ul, lr) {
 * Returns: 
 *     a boolean indicating whether or not the line segment intersects with any of the sides of the rectangle.
 */
-Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
+Point.intersect_seg_with_rect = function(a, b, ul, lr){
   var upperLeft = new Point(ul.x, ul.y);
   var upperRight = new Point(lr.x, ul.y);
   var lowerLeft = new Point(ul.x, lr.y);
@@ -320,7 +320,7 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
       if(j > rect.length - 1){
         j = 0;
       }
-      if(a.intersect_segments(a, b, rect[i], rect[j])){
+      if(Point.intersect_segments(a, b, rect[i], rect[j])){
         return true;
       }
 
@@ -340,7 +340,7 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
 * Returns: 
 *     a boolean indicating whether or not the line segment intersects with the second line segment
 */
-Point.prototype.intersect_segments = function(a, b, c, d){
+Point.intersect_segments = function(a, b, c, d){
   // Check for same line
   if(a.x == c.x && a.y == c.y && b.x == d.x && b.y == d.y){
     return true;

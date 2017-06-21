@@ -335,3 +335,33 @@ exports['contains_point'] = function(test){
   test.equal(onPoly, true);
   test.done();
 }
+
+exports['intersects_with_rect'] = function(test){
+  var p = new Polygon([[0, 0], [12, 0], [10,5], [7,7], [0,5]]);
+  // Test no intersection (Right)
+  var ul = new Point(15, 10), lr = new Point(20,5);
+  var t = p.intersects_with_rect(ul, lr);
+  test.equal(t, false);
+  // Test no intersection (Above)
+  ul = new Point(0, 16), lr = new Point(3,14);
+  t = p.intersects_with_rect(ul, lr);
+  test.equal(t, false);
+
+  ul = new Point(5, 10), lr = new Point(10,6);
+  t = p.intersects_with_rect(ul, lr);
+  test.equal(t, true);
+
+  ul = new Point(0, 8), lr = new Point(10,6);
+  t = p.intersects_with_rect(ul, lr);
+
+  ul = new Point(6, 2), lr = new Point(14,1);
+  t = p.intersects_with_rect(ul, lr);
+  test.equal(t, true);
+  
+  ul = new Point(8, 10), lr = new Point(13,5.5);
+  t = p.intersects_with_rect(ul, lr);
+  test.equal(t, true);
+
+  test.done();
+  
+}

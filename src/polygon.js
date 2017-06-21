@@ -624,4 +624,52 @@ Polygon.prototype.contains_point = function(p){
   return inside;
 }
 
+Polygon.prototype.intersects_with_rect = function(ul, lr){
+  var poly = this.pts;
+  // Broad Phase
+  var bBox = this.bounding_box();
+  var pRectUl = new Point(bBox.x, bBox.y + bBox.height), pRectLr = new Point(bBox.x + bBox.width, bBox.y);
+  
+  if(ul.x > pRectLr.x || pRectUl.x > lr.x){
+    return false;
+  } 
+  if(ul.y < pRectLr.y || pRectUl.y < lr.y){
+    return false;
+  } 
+
+  // Narrow Phase
+
+  // Check if one corner of polygon is inside rectangle
+  for(var i = 0; i < poly.length; i++){
+    var result = poly[i].is_inside_rect(ul, lr);
+    if(result){
+      return true;
+    }
+  }
+
+  // Check if one corner of rectangle is inside polygon
+  var upperRight = new Point(lr.x, ul.y), lowerLeft = new Point(ul.x, lr.y);
+  var rect = [ul, upperRight, lr, lowerLeft];
+  for(var i = 0; i < rect.length; i++){
+    var result = this.contains_point(rect[i]);
+    if(result){
+      return true;
+    }
+  }
+
+  // Check if any polygon side is overlapping the rectangle
+  for(var i = 0; i < poly.length - 1; i++){
+    var j = i + 1;
+    if(j > poly.length - 1){
+      j == 0;
+    }
+    var result = Point.intersect_seg_with_rect(poly[i], poly[j], ul, lr);
+    if(result){
+      return true;
+    }
+  }
+
+  return false;
+
+}
 if (typeof(exports) != 'undefined') { exports.Polygon = Polygon }
