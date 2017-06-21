@@ -333,3 +333,90 @@ exports['intersect_inner_ray_with_rect'] = function(test) {
   test.done();
 }
 
+exports['is_inside_rect'] = function(test){
+  // Test if point is inside rect or if point is outside rect, or on the rectangle
+  var ul = new Point(1,1), lr = new Point(5,5);
+  var inside = new Point(3,3), outside = new Point(6,6), onRect = new Point(2, 1);
+  var inTest = inside.is_inside_rect(ul, lr);
+  var outTest = outside.is_inside_rect(ul, lr);
+  var onTest = onRect.is_inside_rect(ul, lr);
+  test.equal(inTest, true);
+  test.equal(outTest, false);
+  test.equal(onTest, true);
+  test.done();
+}
+
+exports['intersect_segments'] = function(test){
+  // Lines intersect
+  var a = new Point(0, 0);
+  var b = new Point(10, 10);
+  var c = new Point(10,0);
+  var d = new Point(0, 10);
+  var t = a.intersect_segments(a, b, c, d);
+  test.equal(t, true);
+
+  // Parallel Lines, do not intersect
+  a = new Point(0, 0);
+  b = new Point(10, 10);
+  c = new Point(0,5);
+  d = new Point(10, 15);
+  t = a.intersect_segments(a, b, c, d);
+  test.equal(t, false);
+
+  // Same Lines
+  a = new Point(0, 0);
+  b = new Point(10, 10);
+  c = new Point(0, 0);
+  d = new Point(10, 10);
+  t = a.intersect_segments(a, b, c, d);
+  test.equal(t, true);
+
+  // Non Parallel Lines, do not intersect
+  a = new Point(0, 0);
+  b = new Point(10, 10);
+  c = new Point(5, 10);
+  d = new Point(7, 20);
+  t = a.intersect_segments(a, b, c, d);
+  test.equal(t, false);
+
+  // Endpoints Intersect
+  a = new Point(0, 0);
+  b = new Point(10, 10);
+  c = new Point(15, 5);
+  d = new Point(10, 10);
+  t = a.intersect_segments(a, b, c, d);
+  test.equal(t, true);
+  test.done();
+}
+
+exports['intersect_seg_with_rect'] = function(test){
+  var upperLeft = new Point(0,10);
+  var lowerRight = new Point(10,0);
+
+  // Line inside rectangle
+  var a = new Point(3,3);
+  var b = new Point(7,3);
+  var t = a.intersect_seg_with_rect(a, b, upperLeft, lowerRight);
+  test.equal(t, true);
+
+  // Line Intersecting Side
+  a = new Point(5, 5);
+  b = new Point(15, 10);
+  var t = a.intersect_seg_with_rect(a, b, upperLeft, lowerRight);
+  test.equal(t, true);
+
+
+  // No Intersection
+  a = new Point(25, 5);
+  b = new Point(15, 10);
+  var t = a.intersect_seg_with_rect(a, b, upperLeft, lowerRight);
+  test.equal(t, false);
+
+  // Line Intersection Side (Point on Side)
+  a = new Point(25, 5);
+  b = new Point(10, 5);
+  var t = a.intersect_seg_with_rect(a, b, upperLeft, lowerRight);
+  test.equal(t, true);
+
+  test.done();
+}

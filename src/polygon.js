@@ -603,4 +603,25 @@ Polygon.prototype.renderOnCanvas = function(ctx, do_stroke, do_fill) {
   if (do_fill) ctx.fill();
 }
 
+///  Checks if a a point is inside the polygon
+Polygon.prototype.contains_point = function(p){
+  var x = p[0];
+  var y = p[1];
+  var poly = this.pts;
+
+  var inside = false;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    var xi = poly[i].x;
+    var yi = poly[i].y;
+    var xj = poly[j].x;
+    var yj = poly[j].y;
+
+    var intersect = ((yi > y) != (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
 if (typeof(exports) != 'undefined') { exports.Polygon = Polygon }

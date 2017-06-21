@@ -279,9 +279,112 @@ Point.intersect_inner_ray_with_rect = function(R, v, rect) {
     pts = (new Circle(lr.x-r, lr.y-r, r)).intersect_with_ray(R, v);
     point = pts[1] || pts[0] || point;
     tangent = point.sub(new Point(lr.x-r, lr.y-r)).get_perpendicular().scale(-1).Normalize();
-  }
+  
   return {point: point, tangent: tangent };
 }
 
+/** Checks to see if one of the vertices in a polygon is inside a rectangle
+* Params:
+*     ul: a point that is the upper left of the rectangle
+*     lr: a point that is the lower left of the rectangle
+* Returns:
+*     a boolean indicating whether or not the point is inside the rectangle
+*/
+Point.prototype.is_inside_rect = function(ul, lr){
+
+  var upperLeft = [ul.x, ul.y];
+  var upperRight = [lr.x, ul.y];
+  var lowerLeft = [ul.x, lr.y];
+  var lowerRight = [lr.x, lr.y];
+  var rect = [upperLeft, upperRight, lowerRight, lowerLeft];
+
+  var x = this.x;
+  var y = this.y;
+
+  var inside = false;
+  for (var i = 0, j = rect.length - 1; i < rect.length; j = i++) {
+    var xi = rect[i][0];
+    var yi = rect[i][1];
+    var xj = rect[j][0];
+    var yj = rect[j][1];
+
+    var intersect = ((yi > y) != (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+/** Checks to the see if the given line segment intersects with a given rectangle
+* Params:
+*     a: Point 1 of line segment
+*     b: Point 2 of line segment
+*     ul: a point that is the upper left of the rectangle
+*     lr: a point that is the lower left of the rectangle
+* Returns: 
+*     a boolean indicating whether or not the line segment intersects with any of the sides of the rectangle.
+*/
+Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
+  var upperLeft = new Point(ul.x, ul.y);
+  var upperRight = new Point(lr.x, ul.y);
+  var lowerLeft = new Point(ul.x, lr.y);
+  var lowerRight = new Point(lr.x, lr.y);
+  var rect = [upperLeft, upperRight, lowerRight, lowerLeft];
+
+  // Check if line segment is completely inside rectangle
+  if(a.is_inside_rect(ul, lr) && b.is_inside_rect(ul, lr)){
+    console.log("Inside Rectangle");
+    return true;
+  } else {
+    for(var i = 0; i < rect.length; i++){
+      var j = i + 1;
+      if(j > rect.length - 1){
+        j = 0;
+      }
+      if(a.intersect_segments(a, b, rect[i], rect[j])){
+        console.log("Found intersection");
+        return true;
+      }
+
+    }
+  }
+  return false;
+
+}
+
+
+/** Checks to the see if the given line segments intersect with each other
+* Params:
+*     a: Point 1 of first line segment
+*     b: Point 2 of first line segment
+*     c: Point 1 of second line segment
+*     d: Point 2 of second line segment
+* Returns: 
+*     a boolean indicating whether or not the line segment intersects with the second line segment
+*/
+Point.prototype.intersect_segments = function(a, b, c, d){
+  // Check for same line
+  if(a.x == c.x && a.y == c.y && b.x == d.x && b.y == d.y){
+    return true;
+  } else if (a.x == d.x && a.y == d.y && b.x == c.x && b.y == c.y){
+    return true;
+  }
+
+  var test1 = ((c.y-d.y)*(a.x-c.x)+(d.x-c.x)*(a.y-c.y))/
+    ((d.x-c.x)*(a.y-b.y) - (a.x - b.x) * (d.y - c.y));
+
+  var test2 = ((a.y - b.y) * (a.x - c.x) + (b.x - a.x) * (a.y - c.y))/
+    ((d.x - c.x) * (a.y - b.y) - (a.x - b.x) * (d.y - c.y));
+
+    if(test1 >= 0 && test1 <= 1 && test2 >= 0 && test2 <= 1){
+      return true;
+    }
+    
+    return false;
+  
+}
+
+
 /// This line is for the automated tests with node.js
-if (typeof(exports) != 'undefined') { exports.Point = Point }
+if (typeof(exports) != 'undefined') { exports.Point = Point }  
