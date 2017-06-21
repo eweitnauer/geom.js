@@ -325,3 +325,13 @@ exports['convex_decomposition'] = function(test) {
   test.done();
 }
 
+exports['contains_point'] = function(test){
+  // Test if a point is inside, outside, or on a polygon.
+  var p = new Polygon([[0, 0], [10,5], [7,7], [0,5]]);
+  var inside = [2,4], outside = [15,15], onPoly =[0,2];
+  var inTest = p.contains_point(inside), outTest = p.contains_point(outside), onPoly = p.contains_point(onPoly);
+  test.equal(inTest, true);
+  test.equal(outTest, false);
+  test.equal(onPoly, true);
+  test.done();
+}
