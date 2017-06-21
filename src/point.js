@@ -290,30 +290,9 @@ Point.intersect_inner_ray_with_rect = function(R, v, rect) {
 * Returns:
 *     a boolean indicating whether or not the point is inside the rectangle
 */
-Point.prototype.is_inside_rect = function(ul, lr){
+Point.prototype.is_inside_rect = function(ul, lr) {
 
-  var upperLeft = [ul.x, ul.y];
-  var upperRight = [lr.x, ul.y];
-  var lowerLeft = [ul.x, lr.y];
-  var lowerRight = [lr.x, lr.y];
-  var rect = [upperLeft, upperRight, lowerRight, lowerLeft];
-
-  var x = this.x;
-  var y = this.y;
-
-  var inside = false;
-  for (var i = 0, j = rect.length - 1; i < rect.length; j = i++) {
-    var xi = rect[i][0];
-    var yi = rect[i][1];
-    var xj = rect[j][0];
-    var yj = rect[j][1];
-
-    var intersect = ((yi > y) != (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-
-  return inside;
+  return ul.x <= this.x && this.x <= lr.x && ul.y >= this.y && this.y >= lr.y;
 }
 
 /** Checks to the see if the given line segment intersects with a given rectangle
@@ -332,8 +311,8 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
   var lowerRight = new Point(lr.x, lr.y);
   var rect = [upperLeft, upperRight, lowerRight, lowerLeft];
 
-  // Check if line segment is completely inside rectangle
   if(a.is_inside_rect(ul, lr) && b.is_inside_rect(ul, lr)){
+
     return true;
   } else {
     for(var i = 0; i < rect.length; i++){

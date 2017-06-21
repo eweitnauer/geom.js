@@ -335,7 +335,7 @@ exports['intersect_inner_ray_with_rect'] = function(test) {
 
 exports['is_inside_rect'] = function(test){
   // Test if point is inside rect or if point is outside rect, or on the rectangle
-  var ul = new Point(1,1), lr = new Point(5,5);
+  var ul = new Point(1,5), lr = new Point(5,1);
   var inside = new Point(3,3), outside = new Point(6,6), onRect = new Point(2, 1);
   var inTest = inside.is_inside_rect(ul, lr);
   var outTest = outside.is_inside_rect(ul, lr);
@@ -398,6 +398,7 @@ exports['intersect_seg_with_rect'] = function(test){
   var b = new Point(7,3);
   var t = a.intersect_seg_with_rect(a, b, upperLeft, lowerRight);
   test.equal(t, true);
+
 
   // Line Intersecting Side
   a = new Point(5, 5);
