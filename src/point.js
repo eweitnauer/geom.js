@@ -279,7 +279,7 @@ Point.intersect_inner_ray_with_rect = function(R, v, rect) {
     pts = (new Circle(lr.x-r, lr.y-r, r)).intersect_with_ray(R, v);
     point = pts[1] || pts[0] || point;
     tangent = point.sub(new Point(lr.x-r, lr.y-r)).get_perpendicular().scale(-1).Normalize();
-  
+  }
   return {point: point, tangent: tangent };
 }
 
@@ -334,7 +334,6 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
 
   // Check if line segment is completely inside rectangle
   if(a.is_inside_rect(ul, lr) && b.is_inside_rect(ul, lr)){
-    console.log("Inside Rectangle");
     return true;
   } else {
     for(var i = 0; i < rect.length; i++){
@@ -343,7 +342,6 @@ Point.prototype.intersect_seg_with_rect = function(a, b, ul, lr){
         j = 0;
       }
       if(a.intersect_segments(a, b, rect[i], rect[j])){
-        console.log("Found intersection");
         return true;
       }
 
