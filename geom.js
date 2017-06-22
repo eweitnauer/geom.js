@@ -1,4 +1,4 @@
-// Copyright Erik Weitnauer 2017. [v1.0.4]
+// Copyright Erik Weitnauer 2017. [v1.0.5]
 Circle = function(cx, cy, r) {
   this.x = cx;
   this.y = cy;
@@ -534,6 +534,85 @@ Point.intersect_inner_ray_with_rect = function(R, v, rect) {
   }
   return {point: point, tangent: tangent };
 }
+
+/** Checks if the point is inside the rectangle.
+* Params:
+*     ul: a point that is the upper left of the rectangle
+*     lr: a point that is the lower left of the rectangle
+* Returns:
+*     a boolean indicating whether or not the point is inside the rectangle
+*/
+Point.prototype.is_inside_rect = function(ul, lr) {
+  return ul.x <= this.x && this.x <= lr.x && ul.y >= this.y && this.y >= lr.y;
+}
+
+/** Checks to the see if the given line segment intersects with a given rectangle
+* Params:
+*     a: Point 1 of line segment
+*     b: Point 2 of line segment
+*     ul: a point that is the upper left of the rectangle
+*     lr: a point that is the lower left of the rectangle
+* Returns:
+*     a boolean indicating whether or not the line segment intersects with any of the sides of the rectangle.
+*/
+Point.intersect_seg_with_rect = function(a, b, ul, lr) {
+  var upperLeft = new Point(ul.x, ul.y);
+  var upperRight = new Point(lr.x, ul.y);
+  var lowerLeft = new Point(ul.x, lr.y);
+  var lowerRight = new Point(lr.x, lr.y);
+  var rect = [upperLeft, upperRight, lowerRight, lowerLeft];
+
+  if(a.is_inside_rect(ul, lr) && b.is_inside_rect(ul, lr)){
+
+    return true;
+  } else {
+    for(var i = 0; i < rect.length; i++){
+      var j = i + 1;
+      if(j > rect.length - 1){
+        j = 0;
+      }
+      if(Point.intersect_segments(a, b, rect[i], rect[j])){
+        return true;
+      }
+
+    }
+  }
+  return false;
+
+}
+
+
+/** Checks to the see if the given line segments intersect with each other
+* Params:
+*     a: Point 1 of first line segment
+*     b: Point 2 of first line segment
+*     c: Point 1 of second line segment
+*     d: Point 2 of second line segment
+* Returns:
+*     a boolean indicating whether or not the line segment intersects with the second line segment
+*/
+Point.intersect_segments = function(a, b, c, d) {
+  // Check for same line
+  if(a.x == c.x && a.y == c.y && b.x == d.x && b.y == d.y){
+    return true;
+  } else if (a.x == d.x && a.y == d.y && b.x == c.x && b.y == c.y){
+    return true;
+  }
+
+  var test1 = ((c.y-d.y)*(a.x-c.x)+(d.x-c.x)*(a.y-c.y))/
+    ((d.x-c.x)*(a.y-b.y) - (a.x - b.x) * (d.y - c.y));
+
+  var test2 = ((a.y - b.y) * (a.x - c.x) + (b.x - a.x) * (a.y - c.y))/
+    ((d.x - c.x) * (a.y - b.y) - (a.x - b.x) * (d.y - c.y));
+
+    if(test1 >= 0 && test1 <= 1 && test2 >= 0 && test2 <= 1){
+      return true;
+    }
+
+    return false;
+
+}
+
 
 /// This line is for the automated tests with node.js
 if (typeof(exports) != 'undefined') { exports.Point = Point }
@@ -2021,6 +2100,58 @@ Polygon.prototype.toString = function() {
   return '(' + points.join(' ') + ')';
 }
 
+///  Checks if a a point is inside the polygon
+Polygon.prototype.contains_point = function(p){
+  var x = p[0];
+  var y = p[1];
+  var poly = this.pts;
+
+  var inside = false;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    var xi = poly[i].x;
+    var yi = poly[i].y;
+    var xj = poly[j].x;
+    var yj = poly[j].y;
+
+    var intersect = ((yi > y) != (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+/// Returns whether this polygon's area overlaps with the area of the passed
+/// axis-aligned rectangle.
+Polygon.prototype.intersects_with_rect = function(ul, lr) {
+  var poly = this.pts;
+
+  // Broad Phase
+  var poly_bbox = this.bounding_box();
+  if (ul.x > poly_bbox.x + poly_bbox.width || poly_bbox.x > lr.x) return false;
+  if (ul.y < poly_bbox.y || poly_bbox.y + poly_bbox.height < lr.y) return false;
+
+  // Narrow Phase
+  // 1. Check if one corner of polygon is inside rectangle
+  for(var i = 0; i < poly.length; i++) {
+    if (poly[i].is_inside_rect(ul, lr)) return true;
+  }
+
+  // 2. Check if one corner of rectangle is inside polygon
+  if ( this.contains_point(ul) || this.contains_point(lr)
+    || this.contains_point(new Point(lr.x, ul.y))
+    || this.contains_point(new Point(ul.x, lr.y))) return true;
+
+  // 3. Check if any polygon side is overlapping the rectangle
+  var N = poly.length;
+  for(var i=0; i<N; i++) {
+    if (Point.intersect_seg_with_rect(poly[i], poly[(i+1)%N], ul, lr)) return true;
+  }
+
+  return false;
+}
+
+if (typeof(exports) != 'undefined') { exports.Polygon = Polygon }
 /** Parses an SVG rect node into a new closed Polygon with 4 vertices.*/
 Polygon.fromSVGRect = function(rect_node) {
   var poly = new Polygon();
@@ -2270,8 +2401,6 @@ Polygon.prototype.renderOnCanvas = function(ctx, do_stroke, do_fill) {
   if (do_stroke) ctx.stroke();
   if (do_fill) ctx.fill();
 }
-
-if (typeof(exports) != 'undefined') { exports.Polygon = Polygon }
 /// Copyright by Erik Weitnauer, 2012.
 
 /// Decomposes the polygon into convex pieces. (Ordered!)

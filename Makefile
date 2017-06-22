@@ -1,7 +1,7 @@
 JS_COMPILER = ./node_modules/.bin/uglifyjs
 VERSION = v1.0.5
 
-all: geom.min.js
+all: geom.min.js geom-tiny.min.js
 
 geom-tiny: geom-tiny.min.js
 
